@@ -294,32 +294,23 @@ class transaksi
    */
   #[McpTool(
     name: 'update_transaksi',
-    description: 'Mendukung update massal hingga 15 transaksi sekaligus berdasarkan ID. Input berupa array of objects dengan format yang sama seperti catat_transaksi, namun wajib menyertakan field "id" untuk setiap item yang ingin diupdate. Contoh penggunaan:
+    description: 'Mendukung partial update massal hingga 15 transaksi sekaligus berdasarkan ID. Hanya field "id" yang wajib — kirimkan HANYA field yang ingin diubah saja (field yang tidak dikirim tidak akan diubah di database). Contoh penggunaan:
     [
       {
         "id": 123,
-        "jenis_transaksi": "Pengeluaran",
-        "barang": "Makan Siang",
-        "nominal": 50000,
-        "kuantitas": 1,
-        "tanggal": "2024-08-01",
-        "keterangan": "Update: Tambah keterangan detail"
+        "kelompok": "Konsumsi",
+        "rutin": true
       },
       {
         "id": 124,
-        "jenis_transaksi": "Pemasukan",
-        "barang": "Gaji Bulanan",
         "nominal": 5000000,
-        "kuantitas": 1,
-        "tanggal": "2024-08-01",
         "keterangan": "Update: Ganti nominal sesuai slip gaji"
       }
     ]
     ATURAN PENTING:
       1. Batas Maksimal: Hanya mendukung update massal hingga 15 transaksi sekaligus untuk mencegah beban server yang berlebihan. Jika input melebihi batas ini, hanya 15 transaksi pertama yang akan diproses.
-      2. Identifikasi Transaksi: Setiap objek dalam array input harus menyertakan field "id" yang valid untuk mengidentifikasi transaksi yang akan diupdate. Transaksi tanpa "id" atau dengan "id" yang tidak ditemukan di database akan diabaikan.
-      3. Format Input: Format data untuk setiap transaksi yang akan diupdate sama seperti format yang digunakan dalam catat_transaksi, namun dengan tambahan field "id" yang wajib disertakan. Pastikan semua field yang diperlukan untuk update sudah benar dan sesuai dengan format yang ditentukan.
-      ',
+      2. Identifikasi Transaksi: Setiap objek dalam array input wajib menyertakan field "id" yang valid.
+      3. Partial Update: Cukup kirim "id" beserta field yang benar-benar ingin diubah saja. JANGAN mengirim ulang field lain yang tidak berubah.',
     annotations: new ToolAnnotations(
       readOnlyHint: false,
       destructiveHint: true,
@@ -331,13 +322,13 @@ class transaksi
     properties: [
       'data' => [
         'type' => 'array',
-        'description' => 'Daftar transaksi yang akan diupdate. Berupa array of objects berisi detail transaksi.',
+        'description' => 'Daftar transaksi yang akan diupdate. Berupa array of objects berisi "id" dan hanya field yang ingin diubah.',
         'items' => [
           'type' => 'object',
           'properties' => [
             'id' => [
               'type' => 'integer',
-              'description' => 'ID transaksi yang akan diupdate'
+              'description' => 'ID transaksi yang akan diupdate (wajib).'
             ],
             'jenis_transaksi'   => [
               'type' => 'string',
@@ -345,24 +336,25 @@ class transaksi
               'description' => 'Tipe transaksi'
             ],
             'harta'             => ['type' => 'boolean', 'description' => 'Set TRUE untuk aset permanen (HP, Motor, Emas). Set FALSE untuk habis pakai.'],
-            'barang'            => ['type' => 'string', 'description' => 'Nama barang atau deskripsi singkat.'],
+            'barang'            => ['type' => 'string', 'description' => 'Nama barang atau deskripsi singkat. Harus digeneralisasikan tetapi tetap terdiversifikasi (contoh: "Nasi Padang", "Mouse Wireless", bukan "Makan Siang" atau detail merek/SKU).'],
             'rekening_sumber'   => ['anyOf' => [['type' => 'integer'], ['type' => 'null']], 'description' => 'ID Rekening asal. WAJIB panggil get_rekening ulang dan pakai hasil terbaru bila mengubah field ini — jangan pakai ID dari ingatan.'],
             'rekening_masuk'    => ['anyOf' => [['type' => 'integer'], ['type' => 'null']], 'description' => 'ID Rekening tujuan. WAJIB panggil get_rekening ulang dan pakai hasil terbaru bila mengubah field ini — jangan pakai ID dari ingatan.'],
             'nominal'           => ['type' => 'number', 'description' => 'Jumlah dalam Rupiah.'],
             'nominal_asing'     => ['anyOf' => [['type' => 'number'], ['type' => 'null']], 'description' => 'Wajib diisi jika mata uang asing (Emas/USD).'],
-            'kuantitas'         => ['type' => 'number', 'default' => 1],
-            'penyusutan_bunga'  => ['type' => 'number', 'default' => 0],
-            'rutin'             => ['type' => 'boolean', 'default' => false],
-            'kelompok'          => ['anyOf' => [['type' => 'string'], ['type' => 'null']], 'default' => null],
+            'kuantitas'         => ['type' => 'number'],
+            'penyusutan_bunga'  => ['type' => 'number'],
+            'rutin'             => ['type' => 'boolean', 'description' => 'Set false jika kelompok null. Rutin wajib memiliki kelompok.'],
+            'kelompok'          => ['anyOf' => [['type' => 'string'], ['type' => 'null']], 'description' => 'Kategori transaksi atau null jika insidentil/tidak biasa. Wajib diisi jika rutin = true.'],
             'tanggal'           => ['anyOf' => [['type' => 'string'], ['type' => 'null']], 'format' => 'date'],
             'relasi_transaksi'  => ['anyOf' => [['type' => 'integer'], ['type' => 'null']]],
-            'keterangan'        => ['anyOf' => [['type' => 'string'], ['type' => 'null']], 'default' => ''],
+            'keterangan'        => ['anyOf' => [['type' => 'string'], ['type' => 'null']]],
+            'review'            => ['anyOf' => [['type' => 'string'], ['type' => 'null']], 'description' => 'Catatan review transaksi.'],
             'attachment'        => [
               'type' => 'boolean',
               'description' => 'Set TRUE jika ingin mengunggah/mengganti struk/nota/bukti transaksi (attachment) baru.'
             ]
           ],
-          'required' => ['id', 'jenis_transaksi', 'harta', 'barang', 'rekening_sumber', 'rekening_masuk', 'nominal', 'nominal_asing', 'kuantitas', 'penyusutan_bunga', 'rutin', 'kelompok', 'tanggal', 'relasi_transaksi', 'keterangan']
+          'required' => ['id']
         ]
       ]
     ],
@@ -373,39 +365,40 @@ class transaksi
     $transaksi = new ModelsTransaksi();
     $results = [];
     $attachmentLinks = [];
+    $allowedFields = [
+      'jenis_transaksi', 'harta', 'barang', 'rekening_sumber', 'rekening_masuk',
+      'nominal', 'nominal_asing', 'kuantitas', 'penyusutan_bunga', 'rutin',
+      'kelompok', 'tanggal', 'relasi_transaksi', 'keterangan', 'review'
+    ];
+
     try {
       foreach ($data as $index => $item) {
         if ($index >= 15) break; // Batas maksimal 15 transaksi per update massal
-        // 1. Manual verification of required fields
-        $requiredFields = ['id', 'jenis_transaksi', 'harta', 'barang', 'rekening_sumber', 'rekening_masuk', 'nominal', 'nominal_asing', 'kuantitas', 'penyusutan_bunga', 'rutin', 'kelompok', 'tanggal', 'relasi_transaksi', 'keterangan'];
 
-        foreach ($requiredFields as $field) {
-          if (!array_key_exists($field, $item)) {
-            throw new ToolCallException("❌ Validasi Gagal pada item ke-{$index}: Parameter '{$field}' wajib diisi.");
-          }
+        if (!isset($item['id']) || !is_numeric($item['id'])) {
+          throw new ToolCallException("❌ Validasi Gagal pada item ke-{$index}: Parameter 'id' wajib diisi dengan angka yang valid.");
         }
-        $targetId = $item['id'] ?? null;
 
-        if ($targetId) {
-          $updateData = $item;
-          unset($updateData['id']);
+        $targetId = (int) $item['id'];
+        $updateData = array_intersect_key($item, array_flip($allowedFields));
 
-          // Check if user wants to upload an attachment for this updated transaction
-          $wantsAttachment = !empty($updateData['attachment']);
-          unset($updateData['attachment']);
-          if ($wantsAttachment) {
-            $updateData['attachment'] = 'uploading';
-          }
+        // Check if user wants to upload an attachment for this updated transaction
+        $wantsAttachment = !empty($item['attachment']);
+        if ($wantsAttachment) {
+          $updateData['attachment'] = 'uploading';
+        }
 
-          // This now happens in memory, making it lightning fast
-          $transaksi->updateTransaksi($updateData, ['id' => $targetId]);
-          $results[] = "#{$targetId} ({$item['barang']})";
+        if (empty($updateData)) {
+          throw new ToolCallException("❌ Validasi Gagal pada item ke-{$index} (ID #{$targetId}): Minimal satu field yang ingin diubah harus disertakan.");
+        }
 
-          if ($wantsAttachment) {
-            $attachmentLinks[] = "🔗 Harap unggah lampiran (attachment) untuk transaksi #{$targetId} ({$item['barang']}) di sini: " . BASEURL . "/Record/attachment/" . $targetId;
-          }
-        } else {
-          throw new ToolCallException("❌ Gagal Update item '{$item['barang']}' ke database.");
+        // This now happens in memory, making it lightning fast
+        $transaksi->updateTransaksi($updateData, ['id' => $targetId]);
+        $label = isset($item['barang']) ? "#{$targetId} ({$item['barang']})" : "#{$targetId} [" . implode(', ', array_keys($updateData)) . "]";
+        $results[] = $label;
+
+        if ($wantsAttachment) {
+          $attachmentLinks[] = "🔗 Harap unggah lampiran (attachment) untuk transaksi {$label} di sini: " . BASEURL . "/Record/attachment/" . $targetId;
         }
       }
 
