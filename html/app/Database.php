@@ -284,21 +284,37 @@ class Database
         'fingerprint'  => 'v1-' . date('YmdHis')
       ]);
 
-      // 5. Masukkan Saldo Awal (termasuk Nominal Asing)[cite: 1, 2]
+      // 5. Masukkan Saldo Awal (termasuk Nominal Asing & Hutang/Saldo Negatif)[cite: 1, 2]
       foreach ($balances as $b) {
         if ($b['total'] != 0 || $b['total_asing'] != 0) {
-          $this->insert('TRANSAKSI', [
-            'jenis_transaksi' => 'Pemasukan',
-            'barang'          => 'Saldo Awal',
-            'rekening_masuk'  => $b['id'],
-            'kelompok'        => $b['kelompok'],
-            'rutin'           => $b['rutin'],
-            'nominal'         => $b['total'],
-            'nominal_asing'   => $b['total_asing'], // Tetap tercatat untuk akun valas
-            'kuantitas'       => 1,
-            'tanggal'         => date('Y-m-d'),
-            'keterangan'      => 'Reinitialization Saldo Awal'
-          ]);
+          $isNegative = ($b['total'] < 0) || ($b['total'] == 0 && $b['total_asing'] < 0);
+          if ($isNegative) {
+            $this->insert('TRANSAKSI', [
+              'jenis_transaksi' => 'Pengeluaran',
+              'barang'          => 'Saldo Awal (Hutang)',
+              'rekening_sumber' => $b['id'],
+              'kelompok'        => $b['kelompok'],
+              'rutin'           => $b['rutin'],
+              'nominal'         => abs($b['total']),
+              'nominal_asing'   => abs($b['total_asing']),
+              'kuantitas'       => 1,
+              'tanggal'         => date('Y-m-d'),
+              'keterangan'      => 'Reinitialization Saldo Awal (Hutang)'
+            ]);
+          } else {
+            $this->insert('TRANSAKSI', [
+              'jenis_transaksi' => 'Pemasukan',
+              'barang'          => 'Saldo Awal',
+              'rekening_masuk'  => $b['id'],
+              'kelompok'        => $b['kelompok'],
+              'rutin'           => $b['rutin'],
+              'nominal'         => $b['total'],
+              'nominal_asing'   => $b['total_asing'], // Tetap tercatat untuk akun valas
+              'kuantitas'       => 1,
+              'tanggal'         => date('Y-m-d'),
+              'keterangan'      => 'Reinitialization Saldo Awal'
+            ]);
+          }
         }
       }
 

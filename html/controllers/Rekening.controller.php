@@ -154,6 +154,7 @@ class Rekening extends Controller
         ], $model->allCashFlowGraph($_POST['startDate'], $_POST['endDate']));
         $resp['saldo'] = $model->getSaldoEfektif()['saldo'];
         $resp['saldo_by_jenis_uang'] = $model->getSaldoByJenisUang();
+        $resp['summary'] = $model->getSaldoSummary();
       };
     } catch (\Throwable $th) {
       http_response_code(500);

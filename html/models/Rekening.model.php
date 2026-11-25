@@ -23,7 +23,7 @@ class Rekening extends Database
       ->resultSingle();
     $data['aktif'] = $data['aktif'] === 1;
     $data['harta'] = $data['harta'] === 1;
-    $data['isAsing'] = !empty($row['nominal_asing']);
+    $data['isAsing'] = !empty($data['nominal_asing']);
     return $data;
   }
   public function getAll()
@@ -41,6 +41,28 @@ class Rekening extends Database
       ],
       $rows
     );
+  }
+  public function getSaldoSummary(): array
+  {
+    $row = $this->query(<<<SQL
+      SELECT
+        IFNULL(SUM(CASE WHEN harta = 0 AND saldo >= 0 THEN saldo ELSE 0 END), 0) AS liquid_cash,
+        IFNULL(SUM(CASE WHEN harta = 0 AND saldo < 0 THEN saldo ELSE 0 END), 0) AS total_debt,
+        IFNULL(SUM(CASE WHEN harta = 1 THEN saldo ELSE 0 END), 0) AS total_harta
+      FROM {$this->view}
+    SQL)->resultSingle();
+
+    $liquidCash = (float) ($row['liquid_cash'] ?? 0);
+    $totalDebt = (float) ($row['total_debt'] ?? 0);
+    $totalHarta = (float) ($row['total_harta'] ?? 0);
+
+    return [
+      'liquid_cash' => $liquidCash,
+      'total_debt'  => $totalDebt,
+      'total_harta' => $totalHarta,
+      'net_liquid'  => $liquidCash + $totalDebt,
+      'net_worth'   => $liquidCash + $totalHarta + $totalDebt,
+    ];
   }
   public function getSaldoEfektif()
   {

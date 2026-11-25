@@ -4,6 +4,20 @@
     <div class="text-center">$ Net Worth $</div>
     <h3 class="saldo" id="text-saldo"></h3>
     <hr>
+    <div class="row text-center g-2 small">
+      <div class="col-4">
+        <div class="text-muted">Liquid Cash</div>
+        <strong class="text-success" id="text-liquid-cash">-</strong>
+      </div>
+      <div class="col-4">
+        <div class="text-muted">Total Hutang / CC</div>
+        <strong class="text-danger" id="text-total-debt">-</strong>
+      </div>
+      <div class="col-4">
+        <div class="text-muted">Aset / Harta</div>
+        <strong class="text-primary" id="text-total-harta">-</strong>
+      </div>
+    </div>
   </div>
   <div class="flex-row gap-3 d-flex flex-wrap">
     <?php foreach (JENIS_UANG as $jenis) {
@@ -210,9 +224,11 @@
         'data': 'nama',
         'render': function(item, type, data, meta) {
           harta = (data.harta) ? '<span class="badge rounded-pill bg-danger">Properti</span>' : '';
+          const hutangBadge = (!data.harta && Number(data.saldo || 0) < 0) ? '<span class="badge rounded-pill bg-warning text-dark">Hutang/CC</span>' : '';
+          const noAsli = data.no_asli || '';
           return /* HTML */ `
-            <div><strong>${data.nama}&nbsp;${harta}</strong></div>
-            <div class="kuitansi small font-italic">${data.no_asli.length > 0 ? 'No./Ref. Sebenarnya : '+data.no_asli:''}</div>
+            <div><strong>${data.nama}&nbsp;${harta}${hutangBadge}</strong></div>
+            <div class="kuitansi small font-italic">${noAsli.length > 0 ? 'No./Ref. Sebenarnya : '+noAsli:''}</div>
             <div class="kuitansi small font-italic">Dibuat : ${toDateShortMonth(new Date(data.tgl_dibuat))}</div>
             <div class="kuitansi small font-italic">${(!data.aktif) ? 'Ditutup : '+ toDateShortMonth(new Date(data.tgl_ditutup)): ''}</div>
           `
@@ -223,8 +239,9 @@
         'title': 'Saldo',
         'data': 'saldo',
         'render': function(item, type, data, meta) {
-          if (data.nominal_asing.length > 0) return /* HTML */ `
-            <span class="nominal fw-bold text-primary">${formattedNumber.format(data.saldo_asing)+' '+data.nominal_asing}</span><br>
+          const nominalAsing = data.nominal_asing || '';
+          if (nominalAsing.length > 0) return /* HTML */ `
+            <span class="nominal fw-bold text-primary">${formattedNumber.format(data.saldo_asing)+' '+nominalAsing}</span><br>
             <span class="small text-secondary">Rp.&nbsp${formattedNumber.format(data.saldo)},-</span>`
           else return /* HTML */ `
             <span class="nominal fw-bold text-primary">Rp.&nbsp${formattedNumber.format(data.saldo)},-</span>`
@@ -394,7 +411,12 @@
       .catch((e) => showAlert(e.message, 'danger'))
   }
   const drawGraph = () => {
-    document.querySelector('#text-saldo').innerHTML = 'Rp.&nbsp;' + (+accountsCashFlow.saldo).toLocaleString('id')
+    const summary = accountsCashFlow.summary || {};
+    const netWorth = summary.net_worth ?? accountsCashFlow.saldo ?? 0;
+    document.querySelector('#text-saldo').innerHTML = 'Rp.&nbsp;' + (+netWorth).toLocaleString('id');
+    document.querySelector('#text-liquid-cash').innerHTML = 'Rp.&nbsp;' + (+(summary.liquid_cash ?? 0)).toLocaleString('id');
+    document.querySelector('#text-total-debt').innerHTML = 'Rp.&nbsp;' + (+(summary.total_debt ?? 0)).toLocaleString('id');
+    document.querySelector('#text-total-harta').innerHTML = 'Rp.&nbsp;' + (+(summary.total_harta ?? 0)).toLocaleString('id');
     accountsCashFlow.saldo_by_jenis_uang.forEach(row => {
       const jenis = row.jenis_uang || 'Tidak Ditentukan';
       const saldoElement = document.querySelector(`#text-saldo-${jenis.replace(/\s+/g, '-')}`);
