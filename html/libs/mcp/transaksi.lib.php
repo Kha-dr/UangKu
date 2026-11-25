@@ -81,7 +81,13 @@ class transaksi
       5. Transaksi hari Minggu → FALSE.
       6. Kelompok harian (Konsumsi, Transportasi, Sedekah, Topup) Senin–Sabtu → TRUE.
       7. Cek sinyal dominan get_kelompok() & Memory AI: Ikuti histori dominan. Namun, AI dapat menilai berdasarkan memory/riwayat interaksi: jika suatu aktivitas sebelumnya sering tercatat false tetapi riwayat memory menunjukkan aktivitas tersebut kini sudah sering berulang, AI dapat berinisiatif mengajukannya sebagai TRUE pada tabel rekap untuk dikonfirmasi user.
-      8. Ragu / ambigu → FALSE.',
+      8. Ragu / ambigu → FALSE.
+    7. KARTU KREDIT & PINJAMAN / CICILAN (rekening biasa harta=false, saldo negatif = hutang):
+      - Belanja Kartu Kredit: Pengeluaran dari rekening CC (saldo CC jadi negatif, beban tercatat di tanggal beli).
+      - Bayar Tagihan CC: Pindah Buku dari Bank → CC (JANGAN dicatat sebagai Pengeluaran agar tidak double-counting). Biaya tahunan/bunga/admin CC → Pengeluaran dari rekening CC.
+      - Pencairan Pinjaman Tunai: Pindah Buku dari rekening Pinjaman → Bank (bukan Pemasukan).
+      - Beli Aset dengan Cicilan: Pengeluaran dari rekening Cicilan (harta=false) + Pemasukan ke Harta Benda (harta=true, relasi_transaksi="#1").
+      - Bayar Cicilan Bulanan: Pisahkan menjadi 2 baris berelasi — Pindah Buku Bank → Pinjaman untuk pokok, dan Pengeluaran dari Bank untuk bunga/biaya admin (relasi_transaksi mengarah ke baris pokok).',
     annotations: new ToolAnnotations(
       readOnlyHint: false,
       destructiveHint: false,

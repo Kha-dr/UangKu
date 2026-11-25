@@ -134,6 +134,20 @@ class resources
       PROHIBITED: harta: true on Pengeluaran from regular money account
       PROHIBITED: Pindah Buku for Harta transactions
 
+      === CREDIT CARD & LOAN (HUTANG / CICILAN) RULES ===
+
+      Credit cards and loans/installments are modeled as regular REKENING with harta: false, where a negative balance represents debt owed:
+      - Credit Card (Kartu Kredit):
+        1. Swipe / Spend → Pengeluaran from the CC account (harta: false). Records the expense on the actual purchase date; CC balance goes negative (e.g. -500.000).
+        2. Pay CC Bill → Pindah Buku from Bank → CC account (harta: false). Moves cash to cover debt and brings CC balance back toward 0. PROHIBITED: recording CC bill payment as Pengeluaran (causes double-counting).
+        3. Annual fee / Interest / Admin / Materai → Pengeluaran from the CC account.
+      - Loans / Installments (Pinjaman / Cicilan / PayLater / KPR):
+        1. Cash Loan Disbursement → Pindah Buku from Loan account → Bank account (net cashflow stays 0 because borrowed cash is not income; Loan balance becomes negative).
+        2. Buying an Asset on Installment → Row 1: Pengeluaran from Loan/Cicilan account (harta: false) + Row 2: Pemasukan to Harta Benda (harta: true, relasi_transaksi: "#1").
+        3. Paying Monthly Installment → Split into 2 linked rows:
+           - Principal (Pokok): Pindah Buku from Bank → Loan account (reduces negative debt balance).
+           - Interest / Admin Fee (Bunga/Biaya): Pengeluaran from Bank account, linked to the principal row via relasi_transaksi (e.g. "#1").
+
       === RECEIPT / MULTI-ITEM & RELASI RULES ===
 
       - Receipt with multiple items → split per item, NEVER sum into one total
