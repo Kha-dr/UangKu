@@ -29,21 +29,23 @@ class Databases extends Controller
         exit;
       }
     }
-    if (isset($_GET['export'])) {
-      CSRFToken($this->validateCSRFToken($_GET['csrf_token'] ?? ''));
-      return $this->exportCSV();
-    } else if (!empty($_FILES['attachment']['name'])) {
-      CSRFToken($this->validateCSRFToken($_GET['csrf_token'] ?? ''));
-      return $this->importCSV();
-    } else if (isset($_POST['dbVersion']) && !empty($_POST['dbVersion'])) {
-      CSRFToken($this->validateCSRFToken($_GET['csrf_token'] ?? ''));
-      return $this->changeDatabase($_POST['dbVersion']);
-    } else if (isset($_GET['sqllite']) && $_GET['sqllite'] === 'download') {
-      CSRFToken($this->validateCSRFToken($_GET['csrf_token'] ?? ''));
-      return $this->downloadSQLite();
-    } else if (isset($_GET['sqllite']) && $_GET['sqllite'] === 'reinitialize') {
-      CSRFToken($this->validateCSRFToken($_GET['csrf_token'] ?? ''));
-      return $this->reinitializeSQLite();
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+      if (isset($_POST['export'])) {
+        CSRFToken($this->validateCSRFToken($_POST['csrf_token'] ?? ''));
+        return $this->exportCSV();
+      } else if (!empty($_FILES['attachment']['name'])) {
+        CSRFToken($this->validateCSRFToken($_POST['csrf_token'] ?? ''));
+        return $this->importCSV();
+      } else if (isset($_POST['dbVersion']) && !empty($_POST['dbVersion'])) {
+        CSRFToken($this->validateCSRFToken($_POST['csrf_token'] ?? ''));
+        return $this->changeDatabase($_POST['dbVersion']);
+      } else if (($_POST['sqllite'] ?? '') === 'download') {
+        CSRFToken($this->validateCSRFToken($_POST['csrf_token'] ?? ''));
+        return $this->downloadSQLite();
+      } else if (($_POST['sqllite'] ?? '') === 'reinitialize') {
+        CSRFToken($this->validateCSRFToken($_POST['csrf_token'] ?? ''));
+        return $this->reinitializeSQLite();
+      }
     }
     $data['csrf_token'] = $this->generateCSRFToken();
     $data['dbVersions'] =  /* need all sqlite   files in .databases folder */ array_map(function ($file) {
@@ -69,7 +71,7 @@ class Databases extends Controller
     setCacheControl(0);
 
     $model = new Transaksi();
-    $data = $model->getInRange($_GET['startDate'] ?? date('Y-m-01'), $_GET['endDate'] ?? date('Y-m-d'));
+    $data = $model->getInRange($_POST['startDate'] ?? date('Y-m-01'), $_POST['endDate'] ?? date('Y-m-d'));
 
     $filename = "uangku_export_" . date('YmdHis') . ".csv";
 
@@ -330,6 +332,7 @@ class Databases extends Controller
     } catch (\Exception $e) {
       showAlert('Gagal melakukan reinitialization: ' . $e->getMessage(), 'danger');
     }
-    // This function is now handled directly in the database() method for <simplicity>    </simplicity>
+    Route::Referer('/Databases');
+    exit;
   }
 }

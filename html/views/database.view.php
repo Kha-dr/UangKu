@@ -1,13 +1,14 @@
 <div class="container">
   <div class="container-fluid" style="max-width:32rem">
-    <form id="form" method="post" action="/Databases?csrf_token=<?= $data['csrf_token'] ?>" enctype="multipart/form-data">
+    <form id="form" method="post" action="/Databases" enctype="multipart/form-data">
+      <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($data['csrf_token'], ENT_QUOTES) ?>">
       <div class="form-group">
         <div class="date-range input-group mb-3 w-100">
           <input class="form-control" id="startDate" type="text" placeholder="Mulai">
           <span class="input-group-text">s/d</span>
           <input class="form-control" id="endDate" type="text" placeholder="Akhir">
         </div>
-        <a href="/Databases?export=true&csrf_token=<?= $data['csrf_token'] ?>" class="btn bg-success font-weight-bold w-100" id="export">Download CSV</a>
+        <button type="button" class="btn bg-success font-weight-bold w-100" id="btn-export-csv">Download CSV</button>
         <input type="file" placeholder="Upload CSV File" class="form-control" accept=".csv,text/csv,text/comma-separated-values,application/csv,application/vnd.ms-excel,text/plain" name="attachment" />
         <?php InputValidator('attachment') ?>
         <small style="font-size: .5em;">Ini hanya akan mengupdate data yang ada di CSV sesuai id saja, silahkan hapus yang tidak perlu diupdate</small>
@@ -22,9 +23,9 @@
         </select>
         <?php InputValidator('dbVersion') ?>
         <hr>
-        <a href="/Databases?sqllite=download&csrf_token=<?= $data['csrf_token'] ?>" class="btn font-weight-bold w-100" id="export">Download SQLite</a>
+        <button type="button" class="btn font-weight-bold w-100" id="btn-download-sqlite">Download SQLite</button>
         <hr>
-        <a href="/Databases?sqllite=reinitialize&csrf_token=<?= $data['csrf_token'] ?>" class="btn font-weight-bold w-100" id="export">Reinitialize SQL</a>
+        <button type="button" class="btn btn-outline-danger font-weight-bold w-100" id="btn-reinitialize-sqlite">Reinitialize SQL</button>
         <small style="font-size: .5em;">This will reset the SQL database to its initial state with current saldo as saldo awal</small>
       </div>
     </form>
@@ -61,7 +62,27 @@
   startInput.value = toDateShortMonth(dateRange[0]);
   endInput.value = toDateShortMonth(dateRange[1]); // use start date if end is not selected
   const FORM = document.querySelector('form#form');
-  FORM.querySelector("#export").addEventListener('click', (e) => {
+  function submitPostAction(fields) {
+    const tempForm = document.createElement('form');
+    tempForm.method = 'post';
+    tempForm.action = '/Databases';
+    const csrfInput = document.createElement('input');
+    csrfInput.type = 'hidden';
+    csrfInput.name = 'csrf_token';
+    csrfInput.value = FORM.querySelector('input[name="csrf_token"]').value;
+    tempForm.appendChild(csrfInput);
+    Object.entries(fields).forEach(([name, value]) => {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = name;
+      input.value = value;
+      tempForm.appendChild(input);
+    });
+    document.body.appendChild(tempForm);
+    tempForm.submit();
+    tempForm.remove();
+  }
+  FORM.querySelector("#btn-export-csv").addEventListener('click', (e) => {
     e.preventDefault();
     Swal.fire({
       title: `Ekspor Database`,
@@ -72,7 +93,39 @@
     }).then(async (result) => {
       if (!result.isConfirmed) return;
       await showAlert('Memproses....', 'warning')
-      window.location.href = e.target.href + `&startDate=${formatDBDate(dateRange[0])}&endDate=${formatDBDate(dateRange[1])}`
+      submitPostAction({
+        export: 'true',
+        startDate: formatDBDate(dateRange[0]),
+        endDate: formatDBDate(dateRange[1]),
+      });
+    });
+  })
+  FORM.querySelector("#btn-download-sqlite").addEventListener('click', (e) => {
+    e.preventDefault();
+    Swal.fire({
+      title: `Unduh SQLite`,
+      text: "Proses ini akan mengunduh file database SQLite aktif.",
+      icon: "info",
+      target: "dialog",
+      showCancelButton: true,
+    }).then(async (result) => {
+      if (!result.isConfirmed) return;
+      await showAlert('Memproses....', 'warning')
+      submitPostAction({ sqllite: 'download' });
+    });
+  })
+  FORM.querySelector("#btn-reinitialize-sqlite").addEventListener('click', (e) => {
+    e.preventDefault();
+    Swal.fire({
+      title: `Reinitialize SQL`,
+      text: "PERINGATAN: Proses ini akan membuat backup lalu mereset seluruh riwayat transaksi menjadi saldo awal saat ini!",
+      icon: "warning",
+      target: "dialog",
+      showCancelButton: true,
+    }).then(async (result) => {
+      if (!result.isConfirmed) return;
+      await showAlert('Memproses....', 'warning')
+      submitPostAction({ sqllite: 'reinitialize' });
     });
   })
   FORM.attachment.addEventListener('change', () => {
