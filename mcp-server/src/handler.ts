@@ -282,11 +282,19 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
     });
   }
 
-  if (request.method === 'GET' && path === '/.well-known/oauth-protected-resource') {
+  if (
+    request.method === 'GET' &&
+    (path === '/.well-known/oauth-protected-resource' ||
+      path === '/.well-known/oauth-protected-resource/mcp')
+  ) {
     return handleProtectedResourceMetadata(origin, CORS_HEADERS);
   }
 
-  if (request.method === 'GET' && path === '/.well-known/oauth-authorization-server') {
+  if (
+    request.method === 'GET' &&
+    (path === '/.well-known/oauth-authorization-server' ||
+      path === '/.well-known/oauth-authorization-server/mcp')
+  ) {
     return handleAuthorizationServerMetadata(origin, CORS_HEADERS);
   }
 
