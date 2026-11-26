@@ -83,6 +83,8 @@ function collapseNavbarMenu() {
  * Sync the #btn-google-auth label & avatar/icon at the top of the Menu drawer.
  */
 async function syncGoogleAuthButton() {
+  syncDriveReconnectPill();
+
   const btn = document.getElementById('btn-google-auth');
   if (!btn) return;
 
@@ -202,6 +204,7 @@ async function renderCurrentRoute() {
 
     currentRoutePath = path;
     activeView = viewModule;
+    syncDriveReconnectPill();
 
     const subtitleEl = document.getElementById('page-subtitle');
     if (subtitleEl) {
@@ -283,6 +286,66 @@ function initGoogleAuthButton() {
   });
 
   window.addEventListener('kasin:db-updated', syncGoogleAuthButton);
+}
+
+function syncDriveReconnectPill() {
+  const pill = document.getElementById('btn-drive-reconnect');
+  if (!pill) return;
+
+  const shouldShow =
+    gdrive.isConfigured() &&
+    !gdrive.isSignedIn() &&
+    Boolean(gdrive.getUserProfile()) &&
+    currentRoutePath !== '/onboarding';
+
+  if (!shouldShow) {
+    pill.classList.add('d-none');
+    pill.classList.remove('d-inline-flex');
+    return;
+  }
+
+  const pending = gdrive.getSyncState().pendingDeltas || 0;
+  const labelEl = pill.querySelector('.drive-reconnect-label');
+  if (labelEl) {
+    labelEl.textContent = pending > 0 ? `Sync Drive (${pending})` : 'Sync Drive';
+  }
+  pill.classList.remove('d-none');
+  pill.classList.add('d-inline-flex');
+}
+
+function initDriveReconnectPill() {
+  const pill = document.getElementById('btn-drive-reconnect');
+  if (!pill) return;
+
+  syncDriveReconnectPill();
+
+  pill.addEventListener('click', async () => {
+    const iconEl = pill.querySelector('i');
+    pill.disabled = true;
+    iconEl?.classList.add('fa-spin');
+    try {
+      const res = await signInGoogleWithProtection();
+      await syncGoogleAuthButton();
+      syncDriveReconnectPill();
+      if (res?.action !== 'cancelled') {
+        showAlert('Google Drive tersinkronisasi.', 'success');
+      }
+    } catch (err) {
+      await syncGoogleAuthButton();
+      syncDriveReconnectPill();
+      showAlert(err?.message || 'Gagal menyambungkan Google Drive.', 'danger');
+    } finally {
+      pill.disabled = false;
+      iconEl?.classList.remove('fa-spin');
+    }
+  });
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      syncDriveReconnectPill();
+    }
+  });
+  window.addEventListener('kasin:db-updated', syncDriveReconnectPill);
 }
 
 function setupPwaInstall() {
@@ -384,6 +447,7 @@ async function bootstrap() {
   gdrive.enableAutoSave();
   enableLocalFileAutoSave();
   initGoogleAuthButton();
+  initDriveReconnectPill();
   if (gdrive.isSignedIn()) {
     setDriveStatus('Saved to Drive ✓', 'success');
   }
