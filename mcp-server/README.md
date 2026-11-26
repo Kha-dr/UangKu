@@ -160,6 +160,14 @@ npm run start:docker
 
 ---
 
+## Token Refresh Behavior
+
+- `/oauth/authorize` requests `access_type=offline&prompt=consent`, so Google issues both a 1-hour `access_token` and a `refresh_token` to your MCP client or Cloudflare MCP Portal.
+- When an access token expires (or `POST /mcp` returns `401` with `WWW-Authenticate`), the MCP client / Cloudflare MCP Portal automatically calls `POST /oauth/token` with `grant_type=refresh_token` to mint a fresh access token silently.
+- **Important:** Switch your Google Cloud OAuth Consent Screen from **Testing** to **In production** (verification is not required for personal use) — otherwise Google automatically revokes refresh tokens after **7 days**.
+
+---
+
 ## Local Development
 
 Create `mcp-server/.dev.vars` (gitignored):

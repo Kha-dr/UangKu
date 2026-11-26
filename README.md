@@ -18,6 +18,12 @@ Local-first personal cashflow, multi-account, asset depreciation, and wishlist P
 - **Voice & AI Analytics (WebMCP):** Record transactions by voice, ask AI agents to analyze/chart spending via WebMCP tools, and save local Highcharts presets.
 - **Stateless Remote MCP Server:** Connect Claude Web or Gemini Web directly to your Google Drive `kasin.sqlite` via Cloudflare Workers or Docker/Bun.
 
+## Screenshots
+
+| Dashboard (Light) | Dashboard (Dark) | Record (Dark) | Rekening (Light) |
+| :---: | :---: | :---: | :---: |
+| <img src="./docs/screenshots/dashboard-light.png" alt="Dashboard Light" width="190" /> | <img src="./docs/screenshots/dashboard-dark.png" alt="Dashboard Dark" width="190" /> | <img src="./docs/screenshots/record-dark.png" alt="Record Dark" width="190" /> | <img src="./docs/screenshots/rekening-light.png" alt="Rekening Light" width="190" /> |
+
 ## Quick Start
 
 ### 1. Web App (`web/`)
@@ -54,6 +60,13 @@ services:
 ```
 
 See [mcp-server/README.md](mcp-server/README.md) for Cloudflare Workers deployment, Google OAuth redirect URI setup, Cloudflare MCP Portal, and connecting Claude Web / Gemini Web.
+
+## Google Drive Sync & Token Refresh
+
+- **`web/` (Browser PWA — GIS Token Model):** Uses pure-browser Google Identity Services (`initTokenClient`) with no client secret or refresh token in frontend code.
+  - Access tokens last **~1 hour** and are cached in `sessionStorage` so page reloads stay signed in without re-prompting.
+  - When a token expires (or after reopening a closed PWA), edits continue saving locally in IndexedDB and queue in `kasin_pending_deltas`. A minimal **`Sync Drive`** pill appears in the header for a **1-tap reconnect** (`prompt: ''` + `hint: email`, auto-closing popup with no account picker or consent screen) that flushes all queued deltas.
+- **`mcp-server/` (OAuth 2.0 Offline Access):** Requests `access_type=offline`, so your MCP client or Cloudflare MCP Portal receives a `refresh_token` and automatically refreshes expired 1-hour access tokens via `POST /oauth/token`. Set your Google Cloud OAuth Consent Screen to **In production** so refresh tokens do not expire after 7 days.
 
 ## Repository Structure
 

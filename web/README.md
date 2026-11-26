@@ -49,6 +49,13 @@ Google Drive sync uses Google Identity Services (GIS) in the browser with no bac
    - Paste it in the **Basis Data** view (`#/databases`) inside the app (saved in `localStorage`), **or**
    - Hardcode it in `web/js/config.js` (`DEFAULT_GOOGLE_CLIENT_ID`) for your own deployment.
 
+### Token Lifetime & Refresh Behavior
+
+- Because `web/` is a 100% static client-side PWA using Google Identity Services (`initTokenClient`), Google does not issue a `refresh_token` to the browser and hidden-iframe silent refresh is not supported.
+- The 1-hour Google Drive `access_token` is cached in `sessionStorage` (`kasin_drive_access_token` + `kasin_drive_token_expires_at`), so page reloads within 1 hour stay connected automatically.
+- Once the token expires (or after closing and reopening an installed PWA), KasIn drops to **Local Mode** while continuing to save locally and queue changes in `kasin_pending_deltas`.
+- A minimal **`Sync Drive`** pill (showing pending delta count when > 0) appears in the header for previously signed-in users: tapping it triggers a 1-tap reconnect (`prompt: ''` + `hint: email`) that auto-closes without an account picker or consent screen and flushes queued deltas to Google Drive.
+
 ## Local `.sqlite` & Backups
 
 - **Direct Local File (Chromium):** Connect an existing `.sqlite` file or create a brand-new `kasin.sqlite` on disk during onboarding or in **Basis Data** (`#/databases`) with automatic saves.
