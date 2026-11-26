@@ -53,13 +53,22 @@ export function executeGetHarta(db: Database): unknown {
 export const REKENING_TOOLS: McpToolDefinition[] = [
   {
     name: 'get_rekening',
-    description:
-      'Mendapatkan daftar rekening dan ID untuk input transaksi (termasuk saldo, status harta, serta info hutang/kartu kredit/pinjaman: hutang, limit_kredit, tgl_cetak_tagihan, tgl_jatuh_tempo, tenor_bulan, bunga_persen).',
+    description: `Mendapatkan daftar rekening aktif dan ID untuk input transaksi. WAJIB dipanggil fresh sebelum mencatat transaksi untuk mendapatkan ID rekening valid terkini (jangan gunakan ID dari ingatan/cache).
+Format data: [rekening_id, nama_rekening, saldo, saldo_asing, aktif, harta, hutang, limit_kredit, tgl_cetak_tagihan, tgl_jatuh_tempo, tenor_bulan, bunga_persen, isAsing].`,
+    annotations: {
+      readOnlyHint: true,
+      openWorldHint: false
+    },
     inputSchema: { type: 'object', properties: {} }
   },
   {
     name: 'get_harta',
-    description: 'Mendapatkan daftar aset harta yang belum terjual beserta nilai penyusutan saat ini.',
+    description:
+      'Mendapatkan daftar transaksi harta/aset yang sudah tercatat dan nilai pembukuannya (aset permanen seperti HP, Kendaraan, Emas, Properti, Furnitur) untuk referensi inventaris dan depresiasi.',
+    annotations: {
+      readOnlyHint: true,
+      openWorldHint: false
+    },
     inputSchema: { type: 'object', properties: {} }
   }
 ];

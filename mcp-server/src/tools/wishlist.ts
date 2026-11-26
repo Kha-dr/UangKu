@@ -133,11 +133,22 @@ export const WISHLIST_TOOLS: McpToolDefinition[] = [
     name: 'list_wishlist',
     description:
       'Mendapatkan seluruh isi Wishlist (barang yang sedang dipertimbangkan untuk dibeli, belum dicatat sebagai transaksi).',
+    annotations: {
+      readOnlyHint: true,
+      openWorldHint: false
+    },
     inputSchema: { type: 'object', properties: {} }
   },
   {
     name: 'add_wishlist',
-    description: 'Menambahkan barang baru ke Wishlist.',
+    description:
+      'Menambahkan barang baru ke Wishlist (daftar barang yang sedang dipertimbangkan untuk dibeli nanti, TERPISAH dari pencatatan transaksi keuangan). Gunakan ini ketika user ingin "menyimpan dulu" atau "pikir-pikir dulu" sebuah rencana pembelian, BUKAN untuk mencatat pembelian yang sudah terjadi (pakai catat_transaksi untuk itu).',
+    annotations: {
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: false
+    },
     inputSchema: {
       type: 'object',
       properties: {
@@ -147,29 +158,51 @@ export const WISHLIST_TOOLS: McpToolDefinition[] = [
           description: 'Estimasi harga barang dalam Rupiah (opsional)'
         },
         link: { type: ['string', 'null'], description: 'Link/URL ke halaman produk (opsional)' },
-        catatan: { type: ['string', 'null'], description: 'Catatan atau pertimbangan (opsional)' }
+        catatan: {
+          type: ['string', 'null'],
+          description: 'Catatan atau pertimbangan tentang barang ini, bisa diperbarui kapan saja lewat update_wishlist'
+        }
       },
       required: ['nama']
     }
   },
   {
     name: 'update_wishlist',
-    description: 'Memperbarui item Wishlist berdasarkan ID. Hanya field yang dikirim yang akan diubah.',
+    description:
+      'Memperbarui item Wishlist berdasarkan ID — misal mengubah catatan pertimbangan, estimasi harga, atau link. Hanya field yang diisi yang akan diubah.',
+    annotations: {
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'integer', description: 'ID item Wishlist yang akan diperbarui (wajib)' },
-        nama: { type: ['string', 'null'] },
-        harga_estimasi: { type: ['number', 'null'] },
-        link: { type: ['string', 'null'] },
-        catatan: { type: ['string', 'null'] }
+        id: { type: 'integer', description: 'ID item Wishlist yang akan diperbarui' },
+        nama: { type: ['string', 'null'], description: 'Nama baru barang Wishlist (opsional)' },
+        harga_estimasi: {
+          type: ['number', 'null'],
+          description: 'Estimasi harga baru dalam Rupiah (opsional)'
+        },
+        link: { type: ['string', 'null'], description: 'Link/URL baru produk (opsional)' },
+        catatan: {
+          type: ['string', 'null'],
+          description: 'Catatan atau pertimbangan baru (opsional)'
+        }
       },
       required: ['id']
     }
   },
   {
     name: 'delete_wishlist',
-    description: 'Menghapus item Wishlist berdasarkan ID.',
+    description: 'Menghapus item dari Wishlist berdasarkan ID.',
+    annotations: {
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: true,
+      openWorldHint: false
+    },
     inputSchema: {
       type: 'object',
       properties: {

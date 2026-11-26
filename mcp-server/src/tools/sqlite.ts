@@ -1,10 +1,18 @@
 import initSqlJs, { type Database, type SqlJsStatic, type SqlValue } from 'sql.js';
 import { type DeltaOp, type LoadedDelta } from '../gdrive.js';
 
+export interface McpToolAnnotations {
+  readOnlyHint?: boolean;
+  destructiveHint?: boolean;
+  idempotentHint?: boolean;
+  openWorldHint?: boolean;
+}
+
 export interface McpToolDefinition {
   name: string;
   description: string;
   inputSchema: Record<string, unknown>;
+  annotations?: McpToolAnnotations;
 }
 
 export interface MutatingToolOutcome {
