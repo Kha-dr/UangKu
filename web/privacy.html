@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="id" translate="no">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#04a5e5">
+  <title>Kebijakan Privasi — KasIn</title>
+  <link href="./favicon.ico" rel="shortcut icon">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
+    integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg=="
+    crossorigin="anonymous">
+  <link rel="stylesheet" type="text/css" href="./assets/css/style.css">
+  <style>
+    .privacy-card {
+      border: 1px solid color-mix(in srgb, var(--primary-color) 22%, transparent);
+      border-radius: 14px;
+      background-color: var(--bg-color);
+      box-shadow: 0 2px 12px color-mix(in srgb, var(--black-color) 6%, transparent);
+    }
+    .privacy-heading {
+      color: var(--primary-color);
+      font-family: var(--font-head);
+    }
+  </style>
+</head>
+
+<body>
+  <header class="container pt-4 pb-2 text-center">
+    <a href="./" class="d-inline-block">
+      <img src="./assets/img/logo.png" alt="KasIn Logo" style="width: min(160px, 42vw);">
+    </a>
+  </header>
+
+  <main class="container py-3 pb-5" style="max-width: 780px;">
+    <div class="card privacy-card p-4 p-md-5">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+        <h3 class="fw-bold mb-0 privacy-heading">Kebijakan Privasi (Privacy Policy)</h3>
+        <a href="./" class="btn btn-sm rounded-pill px-3" style="background-color: var(--primary-color); color: var(--white-color); border: none;">
+          <i class="fas fa-arrow-left me-1"></i>Kembali ke KasIn
+        </a>
+      </div>
+      <p class="small text-muted mb-4">Terakhir diperbarui: November 2026 &middot; Berlaku untuk aplikasi web <strong>KasIn</strong> dan <strong>KasIn Remote MCP Server</strong>.</p>
+
+      <section class="mb-4">
+        <h6 class="fw-bold privacy-heading"><i class="fas fa-database me-2"></i>1. Penyimpanan Lokal (Local-First)</h6>
+        <p class="small mb-0">
+          KasIn menyimpan seluruh data keuangan Anda (rekening, transaksi, aset, dan wishlist) secara langsung di perangkat Anda menggunakan SQLite WASM (<code>IndexedDB</code> / <code>OPFS</code>) atau file <code>.sqlite</code> lokal yang Anda pilih melalui File System Access API. Kami tidak mengoperasikan server database terpusat dan tidak pernah mengumpulkan atau membaca catatan keuangan Anda.
+        </p>
+      </section>
+
+      <section class="mb-4">
+        <h6 class="fw-bold privacy-heading"><i class="fab fa-google-drive me-2"></i>2. Sinkronisasi Google Drive (Opsional)</h6>
+        <p class="small mb-2">
+          Jika Anda memilih masuk dengan Google, KasIn menggunakan izin <code>https://www.googleapis.com/auth/drive.appdata</code> untuk menyimpan dan menyinkronkan basis data (<code>kasin.sqlite</code> dan delta JSON) di folder tersembunyi khusus aplikasi (<code>appDataFolder</code>) pada Google Drive Anda sendiri.
+        </p>
+        <ul class="small mb-0 ps-3">
+          <li>KasIn <strong>tidak</strong> meminta akses ke file, foto, atau dokumen Google Drive Anda lainnya.</li>
+          <li>Izin <code>userinfo.profile</code> dan <code>userinfo.email</code> hanya digunakan untuk menampilkan nama dan foto profil Anda di menu aplikasi, disimpan lokal di <code>localStorage</code>, dan dihapus saat Anda keluar.</li>
+        </ul>
+      </section>
+
+      <section class="mb-4">
+        <h6 class="fw-bold privacy-heading"><i class="fas fa-robot me-2"></i>3. Remote MCP Server & WebMCP</h6>
+        <p class="small mb-0">
+          Komponen <code>mcp-server</code> bersifat <strong>stateless</strong>: server hanya meneruskan permintaan terotorisasi antara klien AI (seperti Claude atau Gemini) dan Google Drive <code>appDataFolder</code> Anda di memori sementara selama permintaan berlangsung, tanpa menyimpan token OAuth ataupun salinan basis data di disk server.
+        </p>
+      </section>
+
+      <section class="mb-4">
+        <h6 class="fw-bold privacy-heading"><i class="fas fa-user-shield me-2"></i>4. Kontrol & Penghapusan Data</h6>
+        <p class="small mb-0">
+          Anda memegang kendali penuh atas data Anda. Anda dapat mengekspor cadangan <code>.sqlite</code> atau CSV kapan saja dari menu <strong>Basis Data</strong>, menghapus penyimpanan browser lokal, atau mencabut akses Google Drive melalui halaman <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener noreferrer" style="color: var(--primary-color);">Google Account Permissions</a>.
+        </p>
+      </section>
+
+      <section class="mb-0 pt-3 border-top d-flex justify-content-between align-items-center flex-wrap gap-2 small text-muted">
+        <span>KasIn bersifat sumber terbuka (GNU AGPL-3.0).</span>
+        <a href="https://github.com/kha-dr/Uangku" target="_blank" rel="noopener noreferrer" class="text-decoration-none fw-semibold" style="color: var(--primary-color);">
+          <i class="fab fa-github me-1"></i>github.com/kha-dr/Uangku
+        </a>
+      </section>
+    </div>
+  </main>
+</body>
+
+</html>
