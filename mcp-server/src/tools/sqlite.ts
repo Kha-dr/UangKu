@@ -24,7 +24,10 @@ export function getSqlJs(): Promise<SqlJsStatic> {
     if (wasmModule) {
       const mod = wasmModule;
       sqlPromise = initSqlJs({
-        instantiateWasm(imports, receiveInstance) {
+        instantiateWasm(
+          imports: WebAssembly.Imports,
+          receiveInstance: (instance: WebAssembly.Instance, module?: WebAssembly.Module) => void
+        ) {
           const instance = new WebAssembly.Instance(mod, imports);
           receiveInstance(instance, mod);
           return instance.exports;
@@ -34,7 +37,7 @@ export function getSqlJs(): Promise<SqlJsStatic> {
       sqlPromise = initSqlJs();
     }
   }
-  return sqlPromise;
+  return sqlPromise!;
 }
 
 export function queryAll(
