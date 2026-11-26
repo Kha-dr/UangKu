@@ -15,15 +15,10 @@
   "editor.smoothScrolling": true,
   "editor.multiCursorModifier": "ctrlCmd",
   "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "intelephense.diagnostics.undefinedProperties": true,
-  "[php]": {
-    "editor.defaultFormatter": "bmewburn.vscode-intelephense-client"
-  },
   "[javascript]": {
     "editor.defaultFormatter": "vscode.typescript-language-features"
   },
   "[html]": {
     "editor.defaultFormatter": "vscode.html-language-features"
-  },
-  "html.format.templating": true
+  }
 }
