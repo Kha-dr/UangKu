@@ -66,9 +66,36 @@ curl https://<your-worker-subdomain>.workers.dev/health
 
 ---
 
-## Deploy with Docker (`docker compose up -d`)
+## Deploy with Docker
 
 You can also self-host `kasin-mcp-server` as a stateless Bun container (e.g., behind a reverse proxy or Cloudflare Tunnel).
+
+### Option A: Prebuilt Docker Hub Image (`khad1r/kasin-mcp:latest`)
+
+```bash
+docker run -d \
+  --name kasin-mcp \
+  -p 8787:8787 \
+  -e GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com \
+  -e GOOGLE_CLIENT_SECRET=your-client-secret \
+  khad1r/kasin-mcp:latest
+```
+
+Or using `docker-compose.yml`:
+
+```yaml
+services:
+  kasin-mcp:
+    image: khad1r/kasin-mcp:latest
+    ports:
+      - "${PORT:-8787}:8787"
+    environment:
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+    restart: unless-stopped
+```
+
+### Option B: Build Locally (`docker compose up -d`)
 
 1. Create a `.env` file in `mcp-server/` (or export these variables in your shell):
 
@@ -123,6 +150,13 @@ npm run start:docker
    https://<your-worker-subdomain>.workers.dev/mcp
    ```
 3. Sign in with your Google account when prompted to grant `drive.appdata` access.
+
+### Cloudflare MCP Portal
+
+1. In **Cloudflare Zero Trust → Access → AI Controls → MCP Servers**, add your server:
+   - **URL:** `https://<your-worker-subdomain>.workers.dev/mcp`
+   - **Authentication:** **OAuth** (auto-discovered via `/.well-known/oauth-protected-resource/mcp`)
+2. Attach it to your existing **MCP Portal** and connect your AI clients to the Portal URL.
 
 ---
 

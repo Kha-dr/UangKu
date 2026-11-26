@@ -20,37 +20,40 @@ Local-first personal cashflow, multi-account, asset depreciation, and wishlist P
 
 ## Quick Start
 
-### 1. Host the Web App (`web/`)
+### 1. Web App (`web/`)
 
-`web/` is pure static files (zero build step) using relative `./` paths. Remember to add your deployed origin to **Authorized JavaScript origins** in Google Cloud Console if using Google Drive sync.
+Use the hosted PWA directly at **[https://kha-dr.github.io/Uangku/](https://kha-dr.github.io/Uangku/)**.
 
-- **GitHub Pages (Automated on Release):** Enable **Settings → Pages → Source: GitHub Actions**. Publishing a `v*` release (or manual `workflow_dispatch`) triggers [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml), automatically stamping `APP_VERSION`, Service Worker `CACHE_VERSION`, and optional `GOOGLE_CLIENT_ID` (from Actions variable or secret).
-- **Cloudflare Pages:** Connect the repo in **Workers & Pages → Create → Pages**, set **Build output directory** to `web`, and set **Build command** to:
-  ```bash
-  sed -i "s/const CACHE_VERSION = '.*';/const CACHE_VERSION = 'kasin-pwa-${CF_PAGES_COMMIT_SHA:0:7}';/" web/sw.js
-  ```
-- **Local Development:**
-  ```bash
-  npx serve web -l 3000
-  ```
+To self-host (GitHub Pages, Cloudflare Pages, or local development) or configure Google Drive sync, see [web/README.md](web/README.md).
 
-### 2. Host the Remote MCP Server (`mcp-server/`)
+### 2. Remote MCP Server (`mcp-server/`)
 
-- **Cloudflare Workers (Free Tier):**
-  ```bash
-  cd mcp-server
-  npm install
-  npx wrangler secret put GOOGLE_CLIENT_ID
-  npx wrangler secret put GOOGLE_CLIENT_SECRET
-  npx wrangler deploy
-  ```
-- **Docker / Self-Hosted (Automated via CI):** [`.github/workflows/docker-build.yml`](.github/workflows/docker-build.yml) builds `mcp-server/Dockerfile` and pushes `khad1r/kasin-mcp` to Docker Hub on `main` pushes and `v*` release tags (`DOCKER_USERNAME`, `DOCKER_PASSWORD`), or run locally:
-  ```bash
-  cd mcp-server
-  docker compose up -d
-  ```
+Run the prebuilt [`khad1r/kasin-mcp:latest`](https://hub.docker.com/r/khad1r/kasin-mcp) Docker image:
 
-See [mcp-server/README.md](mcp-server/README.md) for Google OAuth redirect URI setup and connecting Claude Web / Gemini Web.
+```bash
+docker run -d \
+  --name kasin-mcp \
+  -p 8787:8787 \
+  -e GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com \
+  -e GOOGLE_CLIENT_SECRET=your-client-secret \
+  khad1r/kasin-mcp:latest
+```
+
+Or with Docker Compose:
+
+```yaml
+services:
+  kasin-mcp:
+    image: khad1r/kasin-mcp:latest
+    ports:
+      - "8787:8787"
+    environment:
+      - GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
+      - GOOGLE_CLIENT_SECRET=your-client-secret
+    restart: unless-stopped
+```
+
+See [mcp-server/README.md](mcp-server/README.md) for Cloudflare Workers deployment, Google OAuth redirect URI setup, Cloudflare MCP Portal, and connecting Claude Web / Gemini Web.
 
 ## Repository Structure
 
