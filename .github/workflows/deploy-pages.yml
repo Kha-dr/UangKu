@@ -1,0 +1,54 @@
+name: Release Web to GitHub Pages
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Stamp App & Service Worker version
+        run: |
+          SHORT_SHA="${GITHUB_SHA::7}"
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            VER="${GITHUB_REF_NAME#v}"
+            CACHE_VER="kasin-pwa-${GITHUB_REF_NAME}"
+          else
+            BASE_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v2.0.0")
+            VER="${BASE_TAG#v}-${SHORT_SHA}"
+            CACHE_VER="kasin-pwa-${SHORT_SHA}"
+          fi
+          sed -i "s/const CACHE_VERSION = '.*';/const CACHE_VERSION = '${CACHE_VER}';/" web/sw.js
+          sed -i "s/export const APP_VERSION = '.*';/export const APP_VERSION = '${VER}';/" web/js/config.js
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Web Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'web'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
