@@ -12,6 +12,8 @@ const STORAGE_KEY_DIRTY = 'kasin_drive_dirty';
 const STORAGE_KEY_APPLIED_DELTAS = 'kasin_applied_deltas';
 const STORAGE_KEY_PENDING_DELTAS = 'kasin_pending_deltas';
 const STORAGE_KEY_USER_PROFILE = 'kasin_google_profile';
+const SESSION_KEY_TOKEN = 'kasin_drive_access_token';
+const SESSION_KEY_EXPIRES_AT = 'kasin_drive_token_expires_at';
 
 const COMPACT_THRESHOLD = 50;
 const AUTO_SAVE_DEBOUNCE_MS = 800;
@@ -20,6 +22,46 @@ const FULL_SNAPSHOT_DELETE_RE = /DELETE\s+FROM\s+TRANSAKSI/i;
 
 let accessToken = null;
 let tokenExpiresAt = 0;
+
+function loadSessionToken() {
+  try {
+    const savedToken = sessionStorage.getItem(SESSION_KEY_TOKEN);
+    const savedExpiresAt = Number(sessionStorage.getItem(SESSION_KEY_EXPIRES_AT));
+    if (savedToken && Number.isFinite(savedExpiresAt) && Date.now() < savedExpiresAt - TOKEN_REFRESH_BUFFER_MS) {
+      accessToken = savedToken;
+      tokenExpiresAt = savedExpiresAt;
+    } else if (savedToken || savedExpiresAt) {
+      sessionStorage.removeItem(SESSION_KEY_TOKEN);
+      sessionStorage.removeItem(SESSION_KEY_EXPIRES_AT);
+    }
+  } catch {
+    // Ignore sessionStorage errors in restricted environments
+  }
+}
+
+function saveSessionToken(token, expiresAt) {
+  accessToken = token;
+  tokenExpiresAt = expiresAt;
+  try {
+    sessionStorage.setItem(SESSION_KEY_TOKEN, token);
+    sessionStorage.setItem(SESSION_KEY_EXPIRES_AT, String(expiresAt));
+  } catch {
+    // Ignore sessionStorage errors in restricted environments
+  }
+}
+
+function clearSessionToken() {
+  accessToken = null;
+  tokenExpiresAt = 0;
+  try {
+    sessionStorage.removeItem(SESSION_KEY_TOKEN);
+    sessionStorage.removeItem(SESSION_KEY_EXPIRES_AT);
+  } catch {
+    // Ignore sessionStorage errors in restricted environments
+  }
+}
+
+loadSessionToken();
 let isPulling = false;
 let autoSaveUnsubscribe = null;
 let autoSaveTimer = null;
@@ -237,8 +279,7 @@ async function authFetch(url, options = {}) {
   });
 
   if (response.status === 401) {
-    accessToken = null;
-    tokenExpiresAt = 0;
+    clearSessionToken();
     updateStatus('Local Mode', 'secondary');
   }
 
@@ -338,9 +379,8 @@ export function signIn({ prompt = '', skipPull = false } = {}) {
           return;
         }
 
-        accessToken = response.access_token;
         const expiresInSec = Number(response.expires_in) || 3600;
-        tokenExpiresAt = Date.now() + expiresInSec * 1000;
+        saveSessionToken(response.access_token, Date.now() + expiresInSec * 1000);
         updateStatus('Syncing...', 'info');
 
         await fetchUserProfile();
@@ -363,7 +403,12 @@ export function signIn({ prompt = '', skipPull = false } = {}) {
       }
     });
 
-    tokenClient.requestAccessToken({ prompt });
+    const requestOptions = { prompt };
+    const savedProfile = getUserProfile();
+    if (savedProfile?.email && prompt !== 'select_account') {
+      requestOptions.hint = savedProfile.email;
+    }
+    tokenClient.requestAccessToken(requestOptions);
   });
 }
 
@@ -372,8 +417,7 @@ export function signIn({ prompt = '', skipPull = false } = {}) {
  */
 export function signOut() {
   const tokenToRevoke = accessToken;
-  accessToken = null;
-  tokenExpiresAt = 0;
+  clearSessionToken();
   removeStorageItem(STORAGE_KEY_USER_PROFILE);
 
   if (tokenToRevoke && typeof google !== 'undefined' && google?.accounts?.oauth2?.revoke) {

@@ -384,6 +384,9 @@ async function bootstrap() {
   gdrive.enableAutoSave();
   enableLocalFileAutoSave();
   initGoogleAuthButton();
+  if (gdrive.isSignedIn()) {
+    setDriveStatus('Saved to Drive ✓', 'success');
+  }
 
   if (!localStorage.getItem('kasin_onboarded')) {
     try {
