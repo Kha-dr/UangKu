@@ -169,6 +169,7 @@ export async function mount(container, params = new URLSearchParams()) {
 
   const isEdit = Boolean(existingTx);
   const activeAccounts = accounts.filter((a) => a.aktif || (existingTx && (String(a.id) === String(existingTx.rekening_sumber) || String(a.id) === String(existingTx.rekening_masuk))));
+  const hartaAccounts = activeAccounts.filter((a) => a.harta);
   const accountMap = new Map(accounts.map((a) => [String(a.id), a]));
   const kelompokNames = [...new Set(kelompokRows.map((k) => k.kelompok).filter(Boolean))];
 
@@ -293,6 +294,41 @@ export async function mount(container, params = new URLSearchParams()) {
               ${kelompokNames.map((k) => `<option value="${escapeHtml(k)}">${escapeHtml(k)}</option>`).join('')}
             </select>
           </div>
+          ${!isEdit ? `
+            <div id="pair-harta-box" class="border border-primary-subtle rounded-3 p-3 mb-3 d-none">
+              <div class="form-check form-switch d-flex justify-content-between align-items-center ps-0 mb-0" style="font-size: .82em; font-weight: 600;">
+                <label class="form-check-label text-primary w-100" for="pair_harta">
+                  <i class="fas fa-coins me-1"></i>Catat juga sebagai Aset Harta
+                </label>
+                <input class="form-check-input" type="checkbox" id="pair_harta">
+              </div>
+              <div id="pair-harta-fields" class="mt-2 pt-2 border-top d-none">
+                <div class="mb-2">
+                  <label class="small text-secondary mb-1" for="pair_harta_rekening">Rekening Aset Harta</label>
+                  <select id="pair_harta_rekening" class="form-select form-select-sm">
+                    ${hartaAccounts.map((a, idx) => `<option value="${escapeHtml(a.id)}"${idx === 0 ? ' selected' : ''}>${escapeHtml(a.nama)}</option>`).join('')}
+                  </select>
+                </div>
+                <div>
+                  <label class="small text-secondary mb-1" for="pair_harta_months">Masa Penyusutan (bulan, 0 = tanpa penyusutan)</label>
+                  <div class="d-flex align-items-center gap-2">
+                    <input type="number" id="pair_harta_months" class="form-control form-control-sm" min="0" value="48" style="max-width: 110px;">
+                    <small id="pair_harta_preview" class="text-muted"></small>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div id="pair-hutang-box" class="border border-primary-subtle rounded-3 p-3 mb-3 d-none">
+              <div class="small text-secondary mb-2">
+                <i class="fas fa-info-circle text-primary me-1"></i>Bayar tagihan CC / pokok cicilan pakai Pindah Buku agar tidak double-counting.
+              </div>
+              <label class="small text-secondary mb-1" for="pair_hutang_bunga">+ Bunga / Biaya Admin (opsional)</label>
+              <div class="input-group input-group-sm">
+                <span class="input-group-text">Rp.</span>
+                <input type="text" id="pair_hutang_bunga" class="form-control" placeholder="0" inputmode="numeric">
+              </div>
+            </div>
+          ` : ''}
         </div>
         <div class="col-lg-4" id="summary-group">
           <div class="form-group">
@@ -332,6 +368,52 @@ export async function mount(container, params = new URLSearchParams()) {
   const infoEl = container.querySelector('#record-attachment-info');
   const canvas = container.querySelector('#preview-canvas');
   const ctx = canvas?.getContext('2d');
+  const pairHartaBox = container.querySelector('#pair-harta-box');
+  const pairHartaCheckbox = container.querySelector('#pair_harta');
+  const pairHartaFields = container.querySelector('#pair-harta-fields');
+  const pairHartaRekEl = container.querySelector('#pair_harta_rekening');
+  const pairHartaMonthsEl = container.querySelector('#pair_harta_months');
+  const pairHartaPreviewEl = container.querySelector('#pair_harta_preview');
+  const pairHutangBox = container.querySelector('#pair-hutang-box');
+  const pairHutangBungaEl = container.querySelector('#pair_hutang_bunga');
+
+  function updatePairedControls() {
+    if (pairHartaBox) {
+      const showHartaPair =
+        !isEdit &&
+        FORM.jenis_transaksi.value === 'Pengeluaran' &&
+        !FORM.harta.checked &&
+        hartaAccounts.length > 0;
+      pairHartaBox.classList.toggle('d-none', !showHartaPair);
+      if (!showHartaPair) {
+        if (pairHartaCheckbox) pairHartaCheckbox.checked = false;
+        pairHartaFields?.classList.add('d-none');
+      } else {
+        const checked = Boolean(pairHartaCheckbox?.checked);
+        pairHartaFields?.classList.toggle('d-none', !checked);
+        if (checked && pairHartaPreviewEl) {
+          const nominalVal = parseIDNumber(FORM.nominal.value);
+          const months = Number.parseInt(pairHartaMonthsEl?.value || '0', 10);
+          if (months > 0 && Number.isFinite(nominalVal) && nominalVal > 0) {
+            pairHartaPreviewEl.textContent = `Rp ${Math.round(nominalVal / months).toLocaleString('id-ID')}/bln`;
+          } else {
+            pairHartaPreviewEl.textContent = 'Tanpa penyusutan';
+          }
+        }
+      }
+    }
+
+    if (pairHutangBox) {
+      const showHutangPair =
+        !isEdit &&
+        FORM.jenis_transaksi.value === 'Pindah Buku' &&
+        Boolean(FORM.rekening_masuk.rekening?.hutang);
+      pairHutangBox.classList.toggle('d-none', !showHutangPair);
+      if (!showHutangPair && pairHutangBungaEl) {
+        pairHutangBungaEl.value = '';
+      }
+    }
+  }
 
   // Helper to toggle field visibility & disabled state
   FORM.switchStateInput = (element, state = null) => {
@@ -630,6 +712,7 @@ export async function mount(container, params = new URLSearchParams()) {
     FORM.harta.State = state;
     updateAsingVisibility();
     hitung();
+    updatePairedControls();
   };
 
   FORM.rutin.State = FORM.rutin.checked;
@@ -661,6 +744,7 @@ export async function mount(container, params = new URLSearchParams()) {
 
     updateAsingVisibility();
     hitung();
+    updatePairedControls();
   }
 
   // Responsive layout switching
@@ -801,8 +885,16 @@ export async function mount(container, params = new URLSearchParams()) {
       const formatted = formatID(el.value);
       if (el.value !== formatted) el.value = formatted;
       hitung();
+      updatePairedControls();
     }, { signal });
   });
+
+  pairHartaCheckbox?.addEventListener('change', updatePairedControls, { signal });
+  pairHartaMonthsEl?.addEventListener('input', updatePairedControls, { signal });
+  pairHutangBungaEl?.addEventListener('input', () => {
+    const formatted = formatID(pairHutangBungaEl.value);
+    if (pairHutangBungaEl.value !== formatted) pairHutangBungaEl.value = formatted;
+  }, { signal });
 
   // Apply initial state / Edit values / URL prefills
   setSelectValue(FORM.jenis_transaksi, defaultJenis);
@@ -841,6 +933,7 @@ export async function mount(container, params = new URLSearchParams()) {
   }
   updateAsingVisibility();
   hitung();
+  updatePairedControls();
 
   // Voice Input integration (FAB visible ONLY while #/record is mounted)
   async function applyVoiceParsed(parsed) {
@@ -897,6 +990,7 @@ export async function mount(container, params = new URLSearchParams()) {
 
     updateAsingVisibility();
     hitung();
+    updatePairedControls();
   }
 
   setVoiceCallback(applyVoiceParsed);
@@ -975,6 +1069,26 @@ export async function mount(container, params = new URLSearchParams()) {
       return;
     }
 
+    const usePairHarta =
+      !isEdit &&
+      Boolean(pairHartaCheckbox?.checked) &&
+      pairHartaBox &&
+      !pairHartaBox.classList.contains('d-none');
+    const pairHartaRekId = usePairHarta && pairHartaRekEl?.value
+      ? Number.parseInt(pairHartaRekEl.value, 10)
+      : null;
+    if (usePairHarta && !pairHartaRekId) {
+      showAlert('Pilih Rekening Aset Harta.', 'warning');
+      return;
+    }
+
+    const usePairHutangBunga =
+      !isEdit &&
+      pairHutangBox &&
+      !pairHutangBox.classList.contains('d-none') &&
+      parseIDNumber(pairHutangBungaEl?.value || '') > 0;
+    const bungaNominal = usePairHutangBunga ? parseIDNumber(pairHutangBungaEl.value) : 0;
+
     const submitBtn = FORM.record;
     submitBtn.disabled = true;
     submitBtn.value = 'Memproses...';
@@ -1020,8 +1134,61 @@ export async function mount(container, params = new URLSearchParams()) {
         const now = new Date();
         const pad = (n) => String(n).padStart(2, '0');
         const created_at = `${formatDBDate(now)} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-        await transaksiModel.insertTransaksi({ ...payload, created_at });
-        showAlert('Transaksi berhasil disimpan.', 'success');
+
+        if (usePairHarta) {
+          const months = Number.parseInt(pairHartaMonthsEl?.value || '0', 10);
+          const monthlyDepr = months > 0 ? Math.round(nominal / months) : 0;
+          await transaksiModel.insertBatch([
+            { ...payload, harta: false, penyusutan_bunga: 0, created_at },
+            {
+              jenis_transaksi: 'Pemasukan',
+              harta: true,
+              rutin: false,
+              barang,
+              kelompok,
+              rekening_sumber: null,
+              rekening_masuk: pairHartaRekId,
+              nominal,
+              nominal_asing,
+              kuantitas,
+              penyusutan_bunga: monthlyDepr,
+              tanggal,
+              relasi_transaksi: '#1',
+              attachment: null,
+              keterangan,
+              review: null,
+              created_at
+            }
+          ]);
+          showAlert('Transaksi & Aset Harta berhasil disimpan.', 'success');
+        } else if (usePairHutangBunga) {
+          await transaksiModel.insertBatch([
+            { ...payload, created_at },
+            {
+              jenis_transaksi: 'Pengeluaran',
+              harta: false,
+              rutin,
+              barang: `Bunga / Admin - ${barang}`,
+              kelompok,
+              rekening_sumber,
+              rekening_masuk: null,
+              nominal: bungaNominal,
+              nominal_asing: 0,
+              kuantitas: 1,
+              penyusutan_bunga: 0,
+              tanggal,
+              relasi_transaksi: '#1',
+              attachment: null,
+              keterangan,
+              review: null,
+              created_at
+            }
+          ]);
+          showAlert('Pembayaran pokok & bunga/admin berhasil disimpan.', 'success');
+        } else {
+          await transaksiModel.insertTransaksi({ ...payload, created_at });
+          showAlert('Transaksi berhasil disimpan.', 'success');
+        }
       }
 
       window.location.hash = '#/transactions';
