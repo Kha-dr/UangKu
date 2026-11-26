@@ -20,9 +20,13 @@ Local-first personal cashflow, multi-account, asset depreciation, and wishlist P
 
 ## Screenshots
 
-| Dashboard (Light) | Dashboard (Dark) | Record (Dark) | Rekening (Light) |
-| :---: | :---: | :---: | :---: |
+<div align="center">
+
+|                                   Dashboard (Light)                                    |                                   Dashboard (Dark)                                   |                                 Record (Dark)                                  |                                   Rekening (Light)                                   |
+| :------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------: | :----------------------------------------------------------------------------: | :----------------------------------------------------------------------------------: |
 | <img src="./docs/screenshots/dashboard-light.png" alt="Dashboard Light" width="190" /> | <img src="./docs/screenshots/dashboard-dark.png" alt="Dashboard Dark" width="190" /> | <img src="./docs/screenshots/record-dark.png" alt="Record Dark" width="190" /> | <img src="./docs/screenshots/rekening-light.png" alt="Rekening Light" width="190" /> |
+
+</div>
 
 ## Quick Start
 
@@ -97,6 +101,11 @@ See [mcp-server/README.md](mcp-server/README.md) for Cloudflare Workers deployme
 
 1. Pushing conventional commits (`feat:`, `fix:`, `refactor:`, etc.) to `main` runs [`.github/workflows/draft-release.yml`](.github/workflows/draft-release.yml) with [`cliff.toml`](cliff.toml) to create/update a Draft Release (`vX.Y.Z`).
 2. Publishing that release in GitHub creates the `vX.Y.Z` tag, which triggers both [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml) (stamping `APP_VERSION` + `CACHE_VERSION` and deploying `web/`) and [`.github/workflows/docker-build.yml`](.github/workflows/docker-build.yml) (pushing `khad1r/kasin-mcp:vX.Y.Z` and `:latest`).
+
+## Roadmap
+
+- **Multi-Item / Receipt Batch Mode (`web/`):** Split receipt items in `#/record` with automatic deterministic prorata discount calculation and `insertBatch` auto-linking.
+- **Opt-In On-Device Receipt Scanner (`web/`):** Lazy-loaded offline receipt extraction (multi-step: raw JSON extraction → deterministic JS prorata → editable review checklist), targeting [Cactus Compute Mirage](https://huggingface.co/Cactus-Compute/mirage) (~22 MB WASM VLM) once an official plug-and-play Web/ESM SDK is available (or a lightweight OCR fallback).
 
 ## License
 
