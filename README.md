@@ -24,7 +24,7 @@ Local-first personal cashflow, multi-account, asset depreciation, and wishlist P
 
 `web/` is pure static files (zero build step) using relative `./` paths. Remember to add your deployed origin to **Authorized JavaScript origins** in Google Cloud Console if using Google Drive sync.
 
-- **GitHub Pages (Automated on Release):** Enable **Settings → Pages → Source: GitHub Actions**. Publishing a `v*` release (or manual `workflow_dispatch`) triggers [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml), automatically stamping `APP_VERSION` and Service Worker `CACHE_VERSION`.
+- **GitHub Pages (Automated on Release):** Enable **Settings → Pages → Source: GitHub Actions**. Publishing a `v*` release (or manual `workflow_dispatch`) triggers [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml), automatically stamping `APP_VERSION`, Service Worker `CACHE_VERSION`, and optional `GOOGLE_CLIENT_ID` (from Actions variable or secret).
 - **Cloudflare Pages:** Connect the repo in **Workers & Pages → Create → Pages**, set **Build output directory** to `web`, and set **Build command** to:
   ```bash
   sed -i "s/const CACHE_VERSION = '.*';/const CACHE_VERSION = 'kasin-pwa-${CF_PAGES_COMMIT_SHA:0:7}';/" web/sw.js

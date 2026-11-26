@@ -28,6 +28,8 @@ jobs:
           fetch-depth: 0
 
       - name: Stamp App & Service Worker version
+        env:
+          GOOGLE_CLIENT_ID: ${{ vars.GOOGLE_CLIENT_ID || secrets.GOOGLE_CLIENT_ID }}
         run: |
           SHORT_SHA="${GITHUB_SHA::7}"
           if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
@@ -40,6 +42,9 @@ jobs:
           fi
           sed -i "s/const CACHE_VERSION = '.*';/const CACHE_VERSION = '${CACHE_VER}';/" web/sw.js
           sed -i "s/export const APP_VERSION = '.*';/export const APP_VERSION = '${VER}';/" web/js/config.js
+          if [ -n "${GOOGLE_CLIENT_ID}" ]; then
+            sed -i "s|export const DEFAULT_GOOGLE_CLIENT_ID = '.*';|export const DEFAULT_GOOGLE_CLIENT_ID = '${GOOGLE_CLIENT_ID}';|" web/js/config.js
+          fi
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
