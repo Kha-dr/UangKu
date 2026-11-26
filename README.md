@@ -3,7 +3,7 @@
 <div align="center">
   <img src="./web/assets/img/logo.png" alt="KasIn Logo" width="180" />
 
-Local-first personal cashflow, multi-account, asset depreciation, and wishlist PWA with optional Google Drive sync, WebMCP, and a stateless Remote MCP server.
+Personal cashflow, multi-account, asset depreciation, and wishlist tracker that runs in your browser with optional Google Drive sync and an MCP server.
 
 [Web App Guide](web/README.md) | [MCP Server Guide](mcp-server/README.md)
 
@@ -11,12 +11,12 @@ Local-first personal cashflow, multi-account, asset depreciation, and wishlist P
 
 ## Features
 
-- **100% Local-First SQLite:** Runs SQLite WASM in-browser via `SharedWorker` (live multi-tab sync) with IndexedDB/OPFS persistence and versioned `PRAGMA user_version` migrations.
-- **Direct Local `.sqlite` Linking:** Connect or create a `.sqlite` file directly on disk (File System Access API) with automatic debounced saves.
-- **Optional Google Drive Sync:** Encrypted user-owned `appDataFolder` sync (`kasin.sqlite` snapshot + JSON deltas) with bidirectional conflict protection.
-- **Multi-Account, Assets & Debt:** Track liquid cash, foreign currencies, depreciating physical assets (`Harta`), credit cards (`limit_kredit`, due-date badges), loans, and wishlists.
-- **Voice & AI Analytics (WebMCP):** Record transactions by voice, ask AI agents to analyze/chart spending via WebMCP tools, and save local Highcharts presets.
-- **Stateless Remote MCP Server:** Connect Claude Web or Gemini Web directly to your Google Drive `kasin.sqlite` via Cloudflare Workers or Docker/Bun.
+- **Offline SQLite in the browser:** Data stays in browser storage and works offline, with multi-tab support.
+- **Direct `.sqlite` file sync:** Link or create a `.sqlite` file on your device and save changes automatically (Chromium browsers).
+- **Optional Google Drive backup:** Sync your database to your own Google Drive app folder.
+- **Accounts, assets, cards & loans:** Track cash, bank accounts, foreign currencies, depreciating assets (`Harta`), credit cards, loans, and a wishlist.
+- **Voice input & charts:** Record entries by voice, run spending charts, and connect AI tools via WebMCP.
+- **Remote MCP server:** Let Claude Web or Gemini Web read and record transactions in your Google Drive database.
 
 ## Screenshots
 
@@ -30,15 +30,15 @@ Local-first personal cashflow, multi-account, asset depreciation, and wishlist P
 
 ## Quick Start
 
-### 1. Web App (`web/`)
+### Web App (`web/`)
 
-Use the hosted PWA directly at **[https://kha-dr.github.io/Uangku/](https://kha-dr.github.io/Uangku/)**.
+Open **[https://kha-dr.github.io/Uangku/](https://kha-dr.github.io/Uangku/)**.
 
-To self-host (GitHub Pages, Cloudflare Pages, or local development) or configure Google Drive sync, see [web/README.md](web/README.md).
+To host it yourself or set up your own Google Client ID, see [web/README.md](web/README.md).
 
-### 2. Remote MCP Server (`mcp-server/`)
+### Remote MCP Server (`mcp-server/`)
 
-Run the prebuilt [`khad1r/kasin-mcp:latest`](https://hub.docker.com/r/khad1r/kasin-mcp) Docker image:
+Run with Docker using [`khad1r/kasin-mcp:latest`](https://hub.docker.com/r/khad1r/kasin-mcp):
 
 ```bash
 docker run -d \
@@ -63,49 +63,17 @@ services:
     restart: unless-stopped
 ```
 
-See [mcp-server/README.md](mcp-server/README.md) for Cloudflare Workers deployment, Google OAuth redirect URI setup, Cloudflare MCP Portal, and connecting Claude Web / Gemini Web.
+See [mcp-server/README.md](mcp-server/README.md) for Cloudflare Workers, Google OAuth setup, Cloudflare MCP Portal, and connecting Claude or Gemini.
 
 ## Google Drive Sync & Token Refresh
 
-- **`web/` (Browser PWA — GIS Token Model):** Uses pure-browser Google Identity Services (`initTokenClient`) with no client secret or refresh token in frontend code.
-  - Access tokens last **~1 hour** and are cached in `sessionStorage` so page reloads stay signed in without re-prompting.
-  - When a token expires (or after reopening a closed PWA), edits continue saving locally in IndexedDB and queue in `kasin_pending_deltas`. A minimal **`Sync Drive`** pill appears in the header for a **1-tap reconnect** (`prompt: ''` + `hint: email`, auto-closing popup with no account picker or consent screen) that flushes all queued deltas.
-- **`mcp-server/` (OAuth 2.0 Offline Access):** Requests `access_type=offline`, so your MCP client or Cloudflare MCP Portal receives a `refresh_token` and automatically refreshes expired 1-hour access tokens via `POST /oauth/token`. Set your Google Cloud OAuth Consent Screen to **In production** so refresh tokens do not expire after 7 days.
+- **Web App (`web/`):** Browser login uses Google Identity Services without a backend secret, so Google gives a 1-hour access token and no refresh token. Reloading within that hour keeps you signed in. Once it expires (or after closing the installed PWA), edits still save locally and queue up, and a small **Sync Drive** button appears in the header so you can reconnect and upload in one tap.
+- **MCP Server (`mcp-server/`):** Uses server-side OAuth (`access_type=offline`), so your MCP client or Cloudflare MCP Portal refreshes expired tokens automatically. Set your Google Cloud OAuth consent screen to **In production** so refresh tokens don't expire after 7 days.
 
-## Repository Structure
+## Planned
 
-```text
-.
-├── .github/
-│   └── workflows/          # Pages deploy, Docker build, and git-cliff draft releases
-├── mcp-server/             # Stateless Remote MCP server (Cloudflare Workers & Docker/Bun)
-│   └── src/
-│       ├── tools/          # MCP tool handlers (transaksi, rekening, wishlist, sqlite, prompt)
-│       ├── gdrive.ts       # Google Drive appDataFolder snapshot + delta sync
-│       ├── oauth.ts        # OAuth 2.0 / RFC 9728 / DCR endpoints
-│       └── schema.ts       # Versioned PRAGMA user_version SQLite migrations
-├── web/                    # Zero-build local-first PWA
-│   ├── assets/             # CSS theme, icons, logo, banner
-│   ├── js/
-│   │   ├── db/             # SQLite WASM SharedWorker, client, local-file handle, schema
-│   │   ├── models/         # Rekening, Transaksi, Wishlist data models
-│   │   ├── sync/           # Google Drive snapshot/delta sync & conflict guards
-│   │   └── views/          # Onboarding, Transactions, Record, Rekening, Wishlist, Analisis, Databases
-│   ├── manifest.json       # PWA manifest & Share Target config
-│   └── sw.js               # Service Worker (network-first on localhost, CI-stamped in prod)
-├── cliff.toml              # git-cliff conventional changelog & semver config
-└── README.md
-```
-
-## Release & CI Flow
-
-1. Pushing conventional commits (`feat:`, `fix:`, `refactor:`, etc.) to `main` runs [`.github/workflows/draft-release.yml`](.github/workflows/draft-release.yml) with [`cliff.toml`](cliff.toml) to create/update a Draft Release (`vX.Y.Z`).
-2. Publishing that release in GitHub creates the `vX.Y.Z` tag, which triggers both [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml) (stamping `APP_VERSION` + `CACHE_VERSION` and deploying `web/`) and [`.github/workflows/docker-build.yml`](.github/workflows/docker-build.yml) (pushing `khad1r/kasin-mcp:vX.Y.Z` and `:latest`).
-
-## Roadmap
-
-- **Multi-Item / Receipt Batch Mode (`web/`):** Split receipt items in `#/record` with automatic deterministic prorata discount calculation and `insertBatch` auto-linking.
-- **Opt-In On-Device Receipt Scanner (`web/`):** Lazy-loaded offline receipt extraction (multi-step: raw JSON extraction → deterministic JS prorata → editable review checklist), targeting [Cactus Compute Mirage](https://huggingface.co/Cactus-Compute/mirage) (~22 MB WASM VLM) once an official plug-and-play Web/ESM SDK is available (or a lightweight OCR fallback).
+- **Multi-item receipt entry (`web/`):** Enter multiple receipt items at once with automatic discount splitting.
+- **Offline receipt scan (`web/`):** Optional on-device receipt reading (watching [Cactus Compute Mirage](https://huggingface.co/Cactus-Compute/mirage) once an official browser SDK ships, or a small OCR fallback).
 
 ## License
 
@@ -113,5 +81,5 @@ Copyright (c) 2025-2026 khadr.dev.
 
 Licensed under the **GNU Affero General Public License v3.0** ([LICENSE](LICENSE)).
 
-- **Third-Party Libraries:** External CDN libraries (including Highcharts, which is free for personal/non-commercial use) remain governed by their respective licenses.
-- **Commercial Licensing:** Separate commercial licenses for closed-source or proprietary distribution are available from `khadr.dev`.
+- **Third-Party Libraries:** External CDN libraries (including Highcharts, which is free for personal/non-commercial use) follow their own licenses.
+- **Commercial Licensing:** Commercial licenses are available from `khadr.dev`.
