@@ -1,4 +1,3 @@
-import { APP_VERSION } from './config.js';
 import { db } from './db/client.js';
 import { enableLocalFileAutoSave, getConnectedLocalFile } from './db/local-file.js';
 import * as rekeningModel from './models/rekening.js';
@@ -287,13 +286,13 @@ function initGoogleAuthButton() {
 }
 
 function setupPwaInstall() {
+  const banner = document.getElementById('pwa-install-banner');
   const installBtn = document.getElementById('btn-pwa-install');
-  const installDivider = document.getElementById('pwa-install-divider');
-  if (!installBtn) return;
+  const dismissBtn = document.getElementById('btn-pwa-install-dismiss');
+  if (!banner || !installBtn) return;
 
-  const setInstallVisible = (visible) => {
-    installBtn.classList.toggle('d-none', !visible);
-    installDivider?.classList.toggle('d-none', !visible);
+  const setBannerVisible = (visible) => {
+    banner.classList.toggle('d-none', !visible);
   };
 
   if (window.matchMedia('(display-mode: standalone)').matches) {
@@ -302,28 +301,74 @@ function setupPwaInstall() {
 
   window.addEventListener('beforeinstallprompt', (e) => {
     deferredInstallPrompt = e;
-    setInstallVisible(true);
+    if (sessionStorage.getItem('kasin_install_dismissed') !== '1') {
+      setBannerVisible(true);
+    }
   });
 
   installBtn.addEventListener('click', async () => {
-    collapseNavbarMenu();
     if (!deferredInstallPrompt) return;
     deferredInstallPrompt.prompt();
     await deferredInstallPrompt.userChoice;
     deferredInstallPrompt = null;
-    setInstallVisible(false);
+    setBannerVisible(false);
+  });
+
+  dismissBtn?.addEventListener('click', () => {
+    sessionStorage.setItem('kasin_install_dismissed', '1');
+    setBannerVisible(false);
   });
 
   window.addEventListener('appinstalled', () => {
     deferredInstallPrompt = null;
-    setInstallVisible(false);
+    setBannerVisible(false);
+  });
+}
+
+function initThemeToggle() {
+  const btn = document.getElementById('btn-theme-toggle');
+  const metaTheme = document.getElementById('meta-theme-color');
+  const THEME_KEY = 'kasin_theme';
+  const mq = window.matchMedia('(prefers-color-scheme: dark)');
+
+  const applyTheme = (theme) => {
+    const isDark = theme === 'dark';
+    document.documentElement.setAttribute('data-bs-theme', isDark ? 'dark' : 'light');
+    if (metaTheme) {
+      metaTheme.setAttribute('content', isDark ? '#1e1e2e' : '#04a5e5');
+    }
+    if (btn) {
+      const label = isDark ? 'Mode Terang' : 'Mode Gelap';
+      btn.innerHTML = `<i class="fas ${isDark ? 'fa-sun' : 'fa-moon'}"></i>`;
+      btn.setAttribute('title', label);
+      btn.setAttribute('aria-label', label);
+    }
+  };
+
+  const getCurrentTheme = () => {
+    const saved = localStorage.getItem(THEME_KEY);
+    if (saved === 'dark' || saved === 'light') return saved;
+    return mq.matches ? 'dark' : 'light';
+  };
+
+  applyTheme(getCurrentTheme());
+
+  btn?.addEventListener('click', () => {
+    const next = document.documentElement.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark';
+    localStorage.setItem(THEME_KEY, next);
+    applyTheme(next);
+  });
+
+  mq.addEventListener('change', () => {
+    if (!localStorage.getItem(THEME_KEY)) {
+      applyTheme(mq.matches ? 'dark' : 'light');
+    }
   });
 }
 
 async function bootstrap() {
   initNavbarOutsideClick();
-  const verEl = document.getElementById('app-version-label');
-  if (verEl) verEl.textContent = `v${APP_VERSION}`;
+  initThemeToggle();
   setupPwaInstall();
   registerWebMCP();
 

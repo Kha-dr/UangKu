@@ -1,10 +1,17 @@
 export const APP_VERSION = '2.0.0-alpha.0';
 
+export const DATATABLE_PAGE_LENGTH = 10;
+export const DATATABLE_LENGTH_MENU = [10, 25, 50, 100];
+
 export const APP_CONFIG = {
   name: 'KasIn',
   repo: 'https://github.com/kha-dr/Uangku',
   repoSlug: 'kha-dr/Uangku',
-  appUrl: 'https://kasin.khadr.dev'
+  appUrl: 'https://kasin.khadr.dev',
+  datatable: {
+    pageLength: DATATABLE_PAGE_LENGTH,
+    lengthMenu: DATATABLE_LENGTH_MENU
+  }
 };
 
 if (typeof window !== 'undefined') {

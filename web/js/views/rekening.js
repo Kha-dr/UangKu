@@ -1,4 +1,4 @@
-import { JENIS_UANG } from '../config.js';
+import { JENIS_UANG, DATATABLE_PAGE_LENGTH, DATATABLE_LENGTH_MENU } from '../config.js';
 import {
   escapeHtml,
   formatIDR,
@@ -582,6 +582,8 @@ export async function mount(container, _params) {
   if (window.DataTable && tableEl) {
     dtTable = new window.DataTable(tableEl, {
       dom: 'ftpl',
+      pageLength: DATATABLE_PAGE_LENGTH,
+      lengthMenu: DATATABLE_LENGTH_MENU,
       language: {
         lengthMenu: 'Per _MENU_ Data',
         zeroRecords: 'Tidak ada rekening',

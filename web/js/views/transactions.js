@@ -1,4 +1,4 @@
-import { JENIS_TRANSAKSI } from '../config.js';
+import { JENIS_TRANSAKSI, DATATABLE_PAGE_LENGTH, DATATABLE_LENGTH_MENU } from '../config.js';
 import { escapeHtml, formatIDR, formatDBDate, toDateShortMonth, showAlert, ensurePdfJs } from '../utils.js';
 import * as transaksiModel from '../models/transaksi.js';
 import * as rekeningModel from '../models/rekening.js';
@@ -717,6 +717,8 @@ export async function mount(container, params = new URLSearchParams()) {
   if (window.DataTable && tableEl) {
     dtTable = new window.DataTable(tableEl, {
       dom: 'ftpl',
+      pageLength: DATATABLE_PAGE_LENGTH,
+      lengthMenu: DATATABLE_LENGTH_MENU,
       language: {
         lengthMenu: 'Per _MENU_ Data',
         zeroRecords: 'Tidak ada transaksi',

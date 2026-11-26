@@ -63,6 +63,7 @@
 
   --bg-color: var(--white-color);
   --bg-color-alt: var(--black-color);
+  --shadow-color: rgb(76, 79, 105);
 
   --font-head: "Varela Round", sans-serif;
   --font-stack: "Montserrat", sans-serif;
@@ -85,6 +86,50 @@
 
   --bs-body-bg: var(--white-color);
   --bs-body-rbg: var(--white-rgb);
+}
+
+:root[data-bs-theme="dark"] {
+  color-scheme: dark;
+
+  --Red-color: rgb(243, 139, 168);
+  --Maroon-color: rgb(235, 160, 172);
+  --Yellow-color: rgb(249, 226, 175);
+  --Green-color: rgb(166, 227, 161);
+  --Teal-color: rgb(148, 226, 213);
+  --Sky-color: rgb(4, 165, 229);
+  --Sapphire-color: rgb(32, 159, 181);
+  --Blue-color: rgb(137, 180, 250);
+  --Text-color: rgb(205, 214, 244);
+
+  --black-color: rgb(205, 214, 244);
+  --black-color-1: rgb(186, 194, 222);
+  --black-color-2: rgb(166, 173, 200);
+  --black-color-3: rgb(147, 153, 178);
+  --black-color-4: rgb(127, 132, 156);
+  --white-color-4: rgb(108, 112, 134);
+  --white-color-3: rgb(88, 91, 112);
+  --white-color-2: rgb(88, 91, 112);
+  --white-color-1: rgb(69, 71, 90);
+  --white-color-0: rgb(49, 50, 68);
+  --white-color: rgb(30, 30, 46);
+
+  --black-rgb: 205, 214, 244;
+  --white-rgb: 30, 30, 46;
+  --red-rgb: 243, 139, 168;
+  --green-rgb: 166, 227, 161;
+  --yellow-rgb: 249, 226, 175;
+
+  --bg-color: var(--white-color);
+  --bg-color-alt: var(--black-color);
+  --shadow-color: rgb(10, 10, 18);
+  --btn-text-color: #fbfbfb;
+
+  --bs-body-bg: #1e1e2e;
+  --bs-body-color: #cdd6f4;
+  --bs-card-bg: #242438;
+  --bs-tertiary-bg: #313244;
+  --bs-border-color: #45475a;
+  --bs-box-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.35);
 }
 .btn-outline-primary,
 .btn-outline-success,
@@ -137,7 +182,7 @@ body {
     footer {
       div {
         box-shadow: 0px -6px 12px
-          color-mix(in srgb, var(--black-color) 30%, transparent);
+          color-mix(in srgb, var(--shadow-color) 30%, transparent);
       }
     }
   }
@@ -156,7 +201,7 @@ a {
     .card {
       border-radius: 8px;
       box-shadow: 3px 3px 2px
-        color-mix(in srgb, var(--black-color) 20%, transparent);
+        color-mix(in srgb, var(--shadow-color) 20%, transparent);
     }
   }
 }
@@ -192,7 +237,7 @@ a {
     border: 1px solid color-mix(in srgb, var(--black-color) 15%, transparent);
     border-radius: 20px;
     box-shadow: 0px 2px 2px
-      color-mix(in srgb, var(--black-color) 30%, transparent);
+      color-mix(in srgb, var(--shadow-color) 30%, transparent);
     padding: 30px;
   }
 
@@ -415,10 +460,10 @@ dialog {
   &::backdrop {
     background: repeating-linear-gradient(
       45deg,
-      color-mix(in srgb, var(--black-color) 20%, transparent),
-      color-mix(in srgb, var(--black-color) 20%, transparent) 1px,
-      color-mix(in srgb, var(--black-color) 30%, transparent) 1px,
-      color-mix(in srgb, var(--black-color) 30%, transparent) 20px
+      color-mix(in srgb, var(--shadow-color) 20%, transparent),
+      color-mix(in srgb, var(--shadow-color) 20%, transparent) 1px,
+      color-mix(in srgb, var(--shadow-color) 30%, transparent) 1px,
+      color-mix(in srgb, var(--shadow-color) 30%, transparent) 20px
     );
     backdrop-filter: blur(3px);
   }
@@ -964,4 +1009,164 @@ details {
 .highcharts-label text,
 .highcharts-data-label text {
   text-shadow: none !important;
+}
+
+[data-bs-theme="dark"] .navbar,
+[data-bs-theme="dark"] .navbar-more,
+[data-bs-theme="dark"] .navbar .nav-link,
+[data-bs-theme="dark"] .navbar-more .nav-link,
+[data-bs-theme="dark"] #form .btn,
+[data-bs-theme="dark"] .db-btn-primary,
+[data-bs-theme="dark"] .onboard-btn-primary,
+[data-bs-theme="dark"] .analisis-btn-primary,
+[data-bs-theme="dark"] #btn-add-wishlist,
+[data-bs-theme="dark"] #btn-add-rekening {
+  color: #fbfbfb !important;
+}
+
+[data-bs-theme="dark"] dialog {
+  background-color: #242438;
+  color: var(--black-color);
+}
+
+[data-bs-theme="dark"] .card {
+  background-color: #242438;
+  border-color: #45475a;
+}
+
+[data-bs-theme="dark"] .card.card-saldo {
+  background-color: var(--primary-color);
+  border-color: transparent;
+  color: #fbfbfb;
+}
+
+[data-bs-theme="dark"] .card.card-saldo a {
+  color: #fbfbfb;
+}
+
+[data-bs-theme="dark"] .card.card-saldo hr {
+  border-color: rgba(255, 255, 255, 0.45);
+}
+
+[data-bs-theme="dark"] .form-control,
+[data-bs-theme="dark"] .form-select {
+  background-color: transparent;
+  color: var(--black-color);
+}
+
+[data-bs-theme="dark"] .input-group-text {
+  background-color: #313244;
+  color: var(--black-color);
+  border-color: #45475a;
+}
+
+[data-bs-theme="dark"] #toast-container .toast {
+  background-color: #242438;
+  color: var(--black-color);
+}
+
+[data-bs-theme="dark"] #toast-container .toast-body {
+  background-color: #242438;
+  color: var(--black-color);
+}
+
+[data-bs-theme="dark"] #toast-container .toast-header.bg-primary strong {
+  color: #fbfbfb !important;
+}
+
+[data-bs-theme="dark"] #toast-container .toast-header.bg-primary .btn-close {
+  filter: invert(1) grayscale(100%) brightness(200%) !important;
+  opacity: 0.9;
+}
+
+[data-bs-theme="dark"] #toast-container .toast-header:is(.bg-success, .bg-warning, .bg-danger, .bg-info) strong {
+  color: #11111b !important;
+}
+
+[data-bs-theme="dark"] #toast-container .toast-header:is(.bg-success, .bg-warning, .bg-danger, .bg-info) .btn-close {
+  filter: none !important;
+  opacity: 0.75;
+}
+
+[data-bs-theme="dark"] .flatpickr-calendar {
+  background: #242438;
+  border-color: #45475a;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+
+[data-bs-theme="dark"] .flatpickr-months,
+[data-bs-theme="dark"] .flatpickr-months .flatpickr-month,
+[data-bs-theme="dark"] .flatpickr-current-month .flatpickr-monthDropdown-months,
+[data-bs-theme="dark"] .flatpickr-weekdays,
+[data-bs-theme="dark"] span.flatpickr-weekday {
+  background: #242438;
+  color: var(--black-color);
+  fill: var(--black-color);
+}
+
+[data-bs-theme="dark"] .flatpickr-day {
+  color: var(--black-color);
+}
+
+[data-bs-theme="dark"] .flatpickr-day:hover,
+[data-bs-theme="dark"] .flatpickr-day:focus {
+  background: #313244;
+  border-color: #313244;
+}
+
+[data-bs-theme="dark"] .flatpickr-day.selected,
+[data-bs-theme="dark"] .flatpickr-day.startRange,
+[data-bs-theme="dark"] .flatpickr-day.endRange {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: #fbfbfb;
+}
+
+[data-bs-theme="dark"] .flatpickr-day.flatpickr-disabled,
+[data-bs-theme="dark"] .flatpickr-day.prevMonthDay,
+[data-bs-theme="dark"] .flatpickr-day.nextMonthDay {
+  color: var(--black-color-4);
+}
+
+[data-bs-theme="dark"] .ss-main,
+[data-bs-theme="dark"] .ss-content {
+  background-color: #242438;
+  color: var(--black-color);
+}
+
+[data-bs-theme="dark"] .ss-content .ss-search input {
+  background-color: #313244;
+  color: var(--black-color);
+  border-color: #45475a;
+}
+
+[data-bs-theme="dark"] .ss-content .ss-list .ss-option {
+  color: var(--black-color);
+}
+
+[data-bs-theme="dark"] .ss-content .ss-list .ss-option:hover,
+[data-bs-theme="dark"] .ss-content .ss-list .ss-option.ss-highlighted {
+  background-color: #313244;
+  color: var(--primary-color);
+}
+
+[data-bs-theme="dark"] .swal2-popup {
+  background-color: #242438;
+  color: var(--black-color);
+}
+
+[data-bs-theme="dark"] .swal2-title,
+[data-bs-theme="dark"] .swal2-html-container {
+  color: var(--black-color);
+}
+
+[data-bs-theme="dark"] .highcharts-title,
+[data-bs-theme="dark"] .highcharts-subtitle,
+[data-bs-theme="dark"] .highcharts-axis-labels text,
+[data-bs-theme="dark"] .highcharts-legend-item text {
+  fill: var(--black-color) !important;
+}
+
+[data-bs-theme="dark"] .highcharts-grid-line {
+  stroke: #313244 !important;
 }

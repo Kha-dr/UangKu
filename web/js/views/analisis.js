@@ -13,7 +13,7 @@ const ANALISIS_CSS = `
     border: 1px solid color-mix(in srgb, var(--primary-color) 22%, transparent);
     border-radius: 12px;
     background-color: var(--bg-color);
-    box-shadow: 0 2px 10px color-mix(in srgb, var(--black-color) 6%, transparent);
+    box-shadow: 0 2px 10px color-mix(in srgb, var(--shadow-color, var(--black-color)) 8%, transparent);
   }
   .analisis-btn-primary {
     background-color: var(--primary-color);

@@ -42,7 +42,7 @@ const ONBOARDING_CSS = `
     width: 44%;
     margin-inline: auto;
     border-radius: 6em 6em 0 0;
-    box-shadow: color-mix(in srgb, var(--black-color) 25%, transparent) 0px -12.5px 30px;
+    box-shadow: color-mix(in srgb, var(--shadow-color, var(--black-color)) 28%, transparent) 0px -12.5px 30px;
     background-color: var(--white-color);
     display: flex;
     flex-direction: column;
@@ -125,21 +125,22 @@ export async function mount(container) {
         <img src="./assets/img/logo.png" alt="KasIn Logo">
       </div>
       <div class="onboard-sheet">
-        <div class="onboard-title mb-1"><i class="fa-solid fa-caret-up"></i></div>
-        <h5 class="onboard-title mb-2 text-center">Start</h5>
+        <div style="width: 44px; height: 4px; border-radius: 999px; background-color: color-mix(in srgb, var(--primary-color) 28%, transparent);" class="mb-2"></div>
+        <h5 class="onboard-title mb-0 text-center">Selamat Datang</h5>
+        <p class="small text-muted text-center mb-2">Pilih penyimpanan data Anda</p>
 
         <div class="w-100 d-flex flex-column gap-2" style="max-width: 360px;">
           <button type="button" id="btn-onboard-local-file" class="btn onboard-btn-primary w-100 rounded-3 py-2 fw-semibold">
-            <i class="fas fa-database me-2"></i>${fsSupported ? 'Connect Local DB' : 'Import Local DB'}
+            <i class="fas fa-database me-2"></i>${fsSupported ? 'Hubungkan DB Lokal' : 'Impor DB Lokal'}
           </button>
           <input type="file" id="onboard-sqlite-input" accept=".sqlite,.sqlite3,.db" class="d-none">
 
           <button type="button" id="btn-onboard-google" class="btn onboard-btn-outline w-100 rounded-3 py-2 fw-semibold">
-            <i class="fab fa-google me-2"></i>Connect Google
+            <i class="fab fa-google me-2"></i>Hubungkan Google
           </button>
 
           <button type="button" id="btn-onboard-new" class="btn onboard-btn-subtle w-100 rounded-3 py-2 fw-semibold">
-            <i class="fas fa-plus-circle me-2"></i>Start New
+            <i class="fas fa-plus-circle me-2"></i>Mulai Baru
           </button>
         </div>
 
