@@ -20,13 +20,13 @@ NEVER skip step 2/3 because you "already know" the IDs from earlier in this conv
 
 Always use THIS TURN's get_rekening() result as reference for account names and IDs — never hardcode, and never reuse IDs recalled from an earlier turn in this conversation.
 
-DEFAULT ACCOUNT if user does not specify:
+DEFAULT ACCOUNT if user does not specify (use these if present in get_rekening(); otherwise match the closest e-wallet, cash, primary bank, or harta=true account from get_rekening() — never hardcode an ID):
 - Food / minimarket / canteen / medicine → ShopeePay
 - Ojek / GoFood / Gojek → GoPay
 - Cash purchase / market / warung without QRIS → Dompet
 - Topup / kos / transfer / tickets → BRI Tampung
 - Receipt photo shows ShopeePay QRIS → ShopeePay
-- Asset purchase → Harta Benda (harta=true)
+- Asset purchase → Harta Benda (or any account with harta=true)
 
 If user explicitly mentions an account → use that, ignore default.
 
@@ -107,7 +107,7 @@ Examples (to keep this unambiguous):
 
 For physical/electronic asset purchases:
 1. Pengeluaran from money account → harta: false
-2. Pemasukan to Harta Benda (ID 16) → harta: true, fill penyusutan_bunga
+2. Pemasukan to a Harta account (where harta=true in get_rekening()) → harta: true, fill penyusutan_bunga
 3. Both entries must be linked via relasi_transaksi (e.g. on row 2 Pemasukan, set relasi_transaksi: "#1" pointing to row 1 Pengeluaran)
 4. Default depreciation for gadgets: 48 months (unless specified)
 PROHIBITED: harta: true on Pengeluaran from regular money account

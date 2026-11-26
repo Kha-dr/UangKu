@@ -464,13 +464,13 @@ Aturan Tampilan Kolom Rekap:
 - Tuliskan catatan asumsi singkat di bawah code block jika ada (misal: prorata diskon atau default account).
 
 ATURAN BISNIS PENTING DARI SYSTEM PROMPT (kasin://system_prompt):
-1. DEFAULT REKENING (jika user tidak menyebutkan secara eksplisit):
+1. DEFAULT REKENING (jika user tidak menyebutkan secara eksplisit; pakai contoh di bawah jika ada di get_rekening(), jika tidak pilih rekening e-wallet/tunai/bank/harta yang paling sesuai dari hasil get_rekening()):
   - Makanan / minimarket / kantin / obat → ShopeePay
   - Ojek / GoFood / Gojek → GoPay
   - Tunai / pasar / warung tanpa QRIS → Dompet
   - Topup / kos / transfer / tiket → BRI Tampung
   - QRIS ShopeePay pada struk → ShopeePay
-  - Pembelian aset → Harta Benda (harta=true)
+  - Pembelian aset → Harta Benda (atau rekening dengan harta=true)
 2. STRUK BELANJA & RELASI INTRA-BATCH:
   - Pecah per item dalam array "data", JANGAN digabung menjadi satu total.
   - Struk belanja tunggal: Cukup gunakan autoRelate: true (semua item otomatis dihubungkan ke baris #1).
