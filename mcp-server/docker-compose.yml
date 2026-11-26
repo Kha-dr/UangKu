@@ -1,0 +1,9 @@
+services:
+  kasin-mcp:
+    build: .
+    ports:
+      - "${PORT:-8787}:8787"
+    environment:
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+    restart: unless-stopped

@@ -1,0 +1,12 @@
+name = "kasin-mcp-server"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+
+# Zero hardcoded secrets in this file.
+# Set your Google OAuth Web Client credentials via Wrangler secrets before deploying:
+#   npx wrangler secret put GOOGLE_CLIENT_ID
+#   npx wrangler secret put GOOGLE_CLIENT_SECRET
+#
+# For local development (`npm run dev`), create a gitignored `.dev.vars` file:
+#   GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
+#   GOOGLE_CLIENT_SECRET=your-client-secret
